@@ -77,37 +77,51 @@ function initTabs() {
 }
 
 async function loadAllData() {
-  if (!db) return; // Wait for Firebase
+  if (!db) {
+    populateProfileForm();
+    renderProjectsList();
+    renderAchievementsList();
+    return;
+  }
+  
   try {
-    // Load Profile
     const profileDoc = await db.collection('portfolio').doc('profile').get();
     if (profileDoc.exists) {
       profileData = profileDoc.data();
     } else {
       profileData = DEFAULT_DATA.profile;
     }
-    populateProfileForm();
+  } catch (err) {
+    console.error("Firebase profile error:", err);
+    profileData = DEFAULT_DATA.profile;
+  }
+  populateProfileForm();
 
-    // Load Projects
+  try {
     const projectsDoc = await db.collection('portfolio').doc('projects').get();
     if (projectsDoc.exists) {
       projectsData = projectsDoc.data().items || [];
     } else {
       projectsData = DEFAULT_DATA.projects;
     }
-    renderProjectsList();
+  } catch (err) {
+    console.error("Firebase projects error:", err);
+    projectsData = DEFAULT_DATA.projects;
+  }
+  renderProjectsList();
 
-    // Load Achievements
+  try {
     const achievementsDoc = await db.collection('portfolio').doc('achievements').get();
     if (achievementsDoc.exists) {
       achievementsData = achievementsDoc.data().items || [];
     } else {
       achievementsData = DEFAULT_DATA.achievements;
     }
-    renderAchievementsList();
   } catch (err) {
-    console.error("Error loading data from Firebase:", err);
+    console.error("Firebase achievements error:", err);
+    achievementsData = DEFAULT_DATA.achievements;
   }
+  renderAchievementsList();
 }
 
 /* ================= PROFILE LOGIC ================= */
