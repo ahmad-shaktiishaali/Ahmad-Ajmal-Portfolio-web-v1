@@ -423,6 +423,7 @@ h1, h2, h3, h4, h5 {
   height: 400px;
   position: relative;
   overflow: hidden;
+  border-radius: 40px;
 }
 
 .hero-photo-frame::before {
@@ -430,6 +431,7 @@ h1, h2, h3, h4, h5 {
   position: absolute;
   inset: -2px;
   border: 1.5px solid var(--border-accent);
+  border-radius: 42px;
   z-index: 2;
   pointer-events: none;
 }
