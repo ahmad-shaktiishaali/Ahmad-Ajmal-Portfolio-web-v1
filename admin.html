@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poetfolio | Admin Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Admin specific overrides */
+    body { background: var(--bg-primary); }
+    .nav-bar { position: relative; }
+  </style>
+</head>
+<body class="dark">
+
+  <nav class="nav-bar">
+    <div class="nav-left">
+      <span class="nav-link active" style="cursor: default;">Admin Dashboard</span>
+    </div>
+    <div class="nav-center"></div>
+    <div class="nav-right">
+      <a href="index.html" target="_blank" class="btn-secondary" style="margin-right: 1rem;">View Site ↗</a>
+      <button class="btn-theme-toggle" id="themeToggle" title="Toggle Theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-title">Manage Content</div>
+      <button class="admin-tab active" data-target="profileSection">Profile</button>
+      <button class="admin-tab" data-target="projectsSection">Projects</button>
+      <button class="admin-tab" data-target="achievementsSection">Achievements</button>
+    </aside>
+
+    <main class="admin-main">
+      <!-- ================= PROFILE SECTION ================= -->
+      <section class="admin-section active" id="profileSection">
+        <h2 class="admin-section-title">Edit Profile</h2>
+        <p class="admin-section-desc">Update your personal information displayed on the home page.</p>
+        
+        <form id="profileForm">
+          <div class="admin-photo-section">
+            <div id="adminPhotoPreviewContainer">
+              <div class="admin-photo-placeholder" id="adminPhotoPlaceholder">📸</div>
+              <img src="" alt="Profile Preview" class="admin-photo-preview" id="adminPhotoPreview" style="display: none;">
+            </div>
+            <div>
+              <label class="btn-secondary">
+                Upload New Photo
+                <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;">
+              </label>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Recommended: Vertical aspect ratio (4:5).</p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="profileName" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" id="profileEmail" class="form-input" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Title / Tagline</label>
+            <input type="text" id="profileTitle" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Bio</label>
+            <textarea id="profileBio" class="form-textarea" required></textarea>
+          </div>
+
+          <!-- Dynamic Lists for Skills, Experience, Studios (Simplified for MVP Admin) -->
+          <div style="margin-top: 2rem;">
+            <p class="form-label" style="color: var(--accent);">Note: Skills, Experience, and Studios can be managed via the JSON storage directly or built out fully in v2.</p>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Save Profile</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ================= PROJECTS SECTION ================= -->
+      <section class="admin-section" id="projectsSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h2 class="admin-section-title" style="margin-bottom: 0;">Projects Manager</h2>
+          <button class="btn-primary" id="btnAddNewProject">+ Add Project</button>
+        </div>
+        <p class="admin-section-desc">Manage the portfolio pieces displayed on the Work page.</p>
+
+        <!-- List View -->
+        <div id="projectsListContainer">
+          <div class="admin-list" id="adminProjectsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Edit/Add Form (Hidden by default) -->
+        <div id="projectFormContainer" style="display: none; background: var(--bg-card); border: 1px solid var(--border); padding: 2rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+            <h3 id="projectFormTitle">Add New Project</h3>
+            <button class="btn-icon" id="btnCancelProject">✕</button>
+          </div>
+          
+          <form id="projectForm">
+            <input type="hidden" id="projectId">
+            
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" id="projectTitle" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Subtitle / Category</label>
+              <input type="text" id="projectSubtitle" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Detail</label>
+              <textarea id="projectDetail" class="form-textarea" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+              <input type="checkbox" id="projectIsTopTier" style="width: 18px; height: 18px; accent-color: var(--accent);">
+              <label class="form-label" style="margin-bottom: 0;">Is Top Tier Project (Shows at top with golden glow)</label>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Images (Max 5)</label>
+              <label class="image-upload" id="projectImageUpload">
+                <div class="image-upload-icon">+</div>
+                <div class="image-upload-text">Click to add image</div>
+                <input type="file" id="projectFileInput" accept="image/*" multiple>
+              </label>
+              <div class="image-preview" id="projectImagePreview">
+                <!-- Image previews populated here -->
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save & Publish</button>
+              <button type="button" class="btn-secondary" id="btnCancelProject2">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= ACHIEVEMENTS SECTION ================= -->
+      <section class="admin-section" id="achievementsSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h2 class="admin-section-title" style="margin-bottom: 0;">Achievements</h2>
+          <button class="btn-primary" id="btnAddNewAchievement">+ Add Achievement</button>
+        </div>
+        <p class="admin-section-desc">Manage certificates and awards displayed on the Contact page.</p>
+
+        <!-- List View -->
+        <div id="achievementsListContainer">
+          <div class="admin-list" id="adminAchievementsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Edit/Add Form (Hidden by default) -->
+        <div id="achievementFormContainer" style="display: none; background: var(--bg-card); border: 1px solid var(--border); padding: 2rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+            <h3 id="achievementFormTitle">Add Achievement</h3>
+            <button class="btn-icon" id="btnCancelAchievement">✕</button>
+          </div>
+          
+          <form id="achievementForm">
+            <input type="hidden" id="achievementId">
+            
+            <div class="form-group">
+              <label class="form-label">Certificate Image (Required)</label>
+              <label class="image-upload" style="padding: 1rem;">
+                <div class="image-upload-text">Upload Image</div>
+                <input type="file" id="achievementFileInput" accept="image/*" required>
+              </label>
+              <div class="image-preview" id="achievementImagePreview"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input type="text" id="achievementTitle" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Details / Issuer</label>
+              <input type="text" id="achievementDetails" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Link (Optional)</label>
+              <input type="url" id="achievementLink" class="form-input" placeholder="https://...">
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save & Publish</button>
+              <button type="button" class="btn-secondary" id="btnCancelAchievement2">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

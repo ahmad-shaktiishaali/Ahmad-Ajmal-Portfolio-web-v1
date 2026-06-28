@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poetfolio | Work</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark">
+
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <div class="nav-left">
+      <button class="btn-diamond" id="adminBtn" title="Admin Access">◆</button>
+    </div>
+    <div class="nav-center">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="work.html" class="nav-link active">Work</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-theme-toggle" id="themeToggle" title="Toggle Theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Password Modal -->
+  <div class="modal-overlay" id="passwordModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Admin Access</h3>
+      <form id="passwordForm">
+        <input type="password" id="adminPassword" class="form-input" placeholder="Enter Password" required>
+        <div class="password-error" id="passwordError"></div>
+        <button type="submit" class="btn-primary">Enter Dashboard</button>
+      </form>
+      <button class="btn-icon" id="closeModal" style="position: absolute; top: 1rem; right: 1rem;">✕</button>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="main-content">
+      <section class="section" style="padding-top: 4rem;">
+        <span class="section-label reveal">Portfolio</span>
+        <h1 class="section-title reveal">Selected Works</h1>
+        <p class="section-subtitle reveal">A curated collection of my recent projects, showcasing design thinking and technical execution.</p>
+        
+        <div class="projects-grid" id="projectsGrid">
+          <!-- Projects populated via JS -->
+          <div class="empty-state reveal reveal-delay-2" id="projectsEmpty" style="display: none;">
+            <div class="empty-icon">📁</div>
+            <div class="empty-text">No projects yet.</div>
+            <div class="empty-sub">Add some from the admin dashboard.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Project Detail Overlay -->
+  <div class="project-overlay" id="projectOverlay">
+    <div class="overlay-header">
+      <button class="overlay-close" id="closeProjectOverlay">✕</button>
+    </div>
+    <div class="overlay-content">
+      <div class="overlay-meta">
+        <h2 class="overlay-title" id="overlayTitle">Project Title</h2>
+        <div class="overlay-subtitle" id="overlaySubtitle">Project Subtitle</div>
+      </div>
+      
+      <p class="overlay-detail" id="overlayDetail"></p>
+      
+      <div class="overlay-divider"></div>
+      
+      <div class="overlay-gallery" id="overlayGallery">
+        <!-- Images populated via JS -->
+      </div>
+      <div class="overlay-img-counter" id="overlayCounter"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span>. Built with <span class="footer-accent">Noir Editorial</span> design.</p>
+  </footer>
+
+  <script src="js/common.js"></script>
+  <script src="js/work.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poetfolio | Home</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark">
+
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <div class="nav-left">
+      <button class="btn-diamond" id="adminBtn" title="Admin Access">◆</button>
+    </div>
+    <div class="nav-center">
+      <a href="index.html" class="nav-link active">Home</a>
+      <a href="work.html" class="nav-link">Work</a>
+      <a href="contact.html" class="nav-link">Contact</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-theme-toggle" id="themeToggle" title="Toggle Theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Password Modal -->
+  <div class="modal-overlay" id="passwordModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Admin Access</h3>
+      <form id="passwordForm">
+        <input type="password" id="adminPassword" class="form-input" placeholder="Enter Password" required>
+        <div class="password-error" id="passwordError"></div>
+        <button type="submit" class="btn-primary">Enter Dashboard</button>
+      </form>
+      <button class="btn-icon" id="closeModal" style="position: absolute; top: 1rem; right: 1rem;">✕</button>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <div class="hero-photo-container reveal reveal-delay-1">
+          <div class="hero-photo-frame">
+            <!-- Image source populated via JS -->
+            <img src="assets/profile.jpg" alt="Profile" class="hero-photo" id="heroPhoto" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%23c8a951\\\' fill-opacity=\\\'0.2\\\'/%3E%3C/svg%3E'">
+          </div>
+          <div class="hero-accent-line"></div>
+          <div class="hero-accent-dot"></div>
+        </div>
+        
+        <div class="hero-info">
+          <div class="hero-greeting reveal reveal-delay-2">Hello, I am</div>
+          <h1 class="hero-name reveal reveal-delay-2" id="heroName">Loading...</h1>
+          <div class="hero-title-text reveal reveal-delay-3" id="heroTitle"></div>
+          <div class="hero-email reveal reveal-delay-3" id="heroEmail"></div>
+          <p class="hero-bio reveal reveal-delay-4" id="heroBio"></p>
+          
+          <div class="hero-stats reveal reveal-delay-4">
+            50+ Projects made <br>
+            20+ Games Published on Appstore
+          </div>
+
+          <div class="hero-cta reveal reveal-delay-4">
+            <a href="work.html" class="btn-primary">View My Work <span>→</span></a>
+            <a href="contact.html" class="btn-secondary">Get In Touch</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-content">
+      <!-- Skills Section -->
+      <section class="section" id="skills">
+        <span class="section-label reveal">Expertise</span>
+        <h2 class="section-title reveal">My Skills</h2>
+        <p class="section-subtitle reveal">Technical and creative abilities honed over years of dedicated practice.</p>
+        
+        <div class="skills-grid" id="skillsContainer">
+          <!-- Skills populated via JS -->
+        </div>
+      </section>
+
+      <!-- Experience Section -->
+      <section class="section" id="experience">
+        <span class="section-label reveal">Journey</span>
+        <h2 class="section-title reveal">Experience</h2>
+        <p class="section-subtitle reveal">A timeline of my professional roles and achievements.</p>
+        
+        <div class="timeline" id="experienceContainer">
+          <!-- Experience populated via JS -->
+        </div>
+      </section>
+
+      <!-- Studios Section -->
+      <section class="section" id="studios">
+        <span class="section-label reveal">Collaborations</span>
+        <h2 class="section-title reveal">Studios</h2>
+        <p class="section-subtitle reveal">Places and teams I've had the pleasure of working with.</p>
+        
+        <div class="studios-list reveal reveal-delay-2" id="studiosContainer">
+          <!-- Studios populated via JS -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span> <span id="footerName"></span>. Built with <span class="footer-accent">Noir Editorial</span> design.</p>
+  </footer>
+
+  <script src="js/common.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

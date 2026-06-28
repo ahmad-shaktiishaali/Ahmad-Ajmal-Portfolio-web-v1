@@ -1,0 +1,202 @@
+// default data fallback if localStorage is empty
+const DEFAULT_DATA = {
+  profile: {
+    name: "Ahmad Ajmal",
+    title: "Software Engineer & Designer",
+    email: "ahmad@example.com",
+    bio: "I am a passionate software engineer and designer who builds premium, high-performance web experiences. Combining technical excellence with beautiful editorial design to create digital products that stand out.",
+    photo: "assets/profile.jpg"
+  },
+  skills: [
+    { name: "Game Development", percent: 95 },
+    { name: "Graphic Design", percent: 95 },
+    { name: "Programming", percent: 90 },
+    { name: "Game Design", percent: 99 },
+    { name: "Software Development", percent: 90 },
+    { name: "Web Development", percent: 85 },
+    { name: "UI/UX Design", percent: 92 },
+    { name: "Level Design", percent: 88 },
+    { name: "Animation", percent: 80 },
+    { name: "Project Management", percent: 85 }
+  ],
+  experience: [
+    { year: "2025", role: "Remote job", company: "Out Of box Solutions", desc: "" },
+    { year: "2023", role: "Remote game dev job", company: "Flux Craft Studios", desc: "" },
+    { year: "2020", role: "Freelancing", company: "", desc: "Still Continued" }
+  ],
+  studios: ["Design Lab", "Creative Tech", "Web Solutions", "Innovate Studios"],
+  projects: [],
+  achievements: []
+};
+
+// Initialize localStorage if empty
+function initStorage() {
+  if (!localStorage.getItem('poetfolio_profile')) {
+    localStorage.setItem('poetfolio_profile', JSON.stringify(DEFAULT_DATA.profile));
+  }
+  
+  // Force update skills to reflect latest changes
+  localStorage.setItem('poetfolio_skills', JSON.stringify(DEFAULT_DATA.skills));
+
+  // Force update experience to reflect latest changes
+  localStorage.setItem('poetfolio_experience', JSON.stringify(DEFAULT_DATA.experience));
+  if (!localStorage.getItem('poetfolio_studios')) {
+    localStorage.setItem('poetfolio_studios', JSON.stringify(DEFAULT_DATA.studios));
+  }
+  if (!localStorage.getItem('poetfolio_projects')) {
+    localStorage.setItem('poetfolio_projects', JSON.stringify(DEFAULT_DATA.projects));
+  }
+  if (!localStorage.getItem('poetfolio_achievements')) {
+    localStorage.setItem('poetfolio_achievements', JSON.stringify(DEFAULT_DATA.achievements));
+  }
+}
+
+// Theme Management
+function initTheme() {
+  const toggleBtn = document.getElementById('themeToggle');
+  const icon = toggleBtn?.querySelector('.theme-icon');
+  
+  // Check saved theme
+  const savedTheme = localStorage.getItem('poetfolio_theme') || 'dark';
+  document.body.className = savedTheme;
+  updateThemeIcon(icon, savedTheme);
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.contains('dark');
+      const newTheme = isDark ? 'light' : 'dark';
+      
+      document.body.className = newTheme;
+      localStorage.setItem('poetfolio_theme', newTheme);
+      updateThemeIcon(icon, newTheme);
+    });
+  }
+}
+
+function updateThemeIcon(iconEl, theme) {
+  if (!iconEl) return;
+  // Moon for dark mode (to switch to light), Sun for light mode (to switch to dark)
+  iconEl.innerHTML = theme === 'dark' 
+    ? '☀️' // current is dark, show sun to toggle light
+    : '🌙'; // current is light, show moon to toggle dark
+}
+
+// Admin Modal Logic
+function initAdminModal() {
+  const diamondBtn = document.getElementById('adminBtn');
+  const modal = document.getElementById('passwordModal');
+  const closeBtn = document.getElementById('closeModal');
+  const form = document.getElementById('passwordForm');
+  const input = document.getElementById('adminPassword');
+  const errorMsg = document.getElementById('passwordError');
+
+  if (!diamondBtn || !modal) return;
+
+  diamondBtn.addEventListener('click', () => {
+    modal.classList.add('active');
+    input.value = '';
+    errorMsg.textContent = '';
+    setTimeout(() => input.focus(), 100);
+  });
+
+  closeBtn?.addEventListener('click', () => {
+    modal.classList.remove('active');
+  });
+
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+    }
+  });
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const pwd = input.value;
+    
+    if (pwd === 'Nizam123') {
+      // Correct password
+      modal.classList.remove('active');
+      window.open('admin.html', '_blank');
+    } else {
+      errorMsg.textContent = 'Incorrect password. Try again.';
+      input.classList.add('shake');
+      setTimeout(() => input.classList.remove('shake'), 500);
+    }
+  });
+}
+
+// Scroll Reveal Animation
+function initScrollReveal() {
+  const elements = document.querySelectorAll('.reveal');
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        
+        // Specific trigger for skill bars
+        if (entry.target.classList.contains('skill-item')) {
+          entry.target.classList.add('animated');
+          const bar = entry.target.querySelector('.skill-fill');
+          if (bar) {
+            const percent = bar.getAttribute('data-percent');
+            bar.style.width = percent + '%';
+          }
+        }
+        
+        observer.unobserve(entry.target); // Only animate once
+      }
+    });
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  elements.forEach(el => observer.observe(el));
+}
+
+// Navigation Highlighting
+function initNav() {
+  const path = window.location.pathname;
+  const page = path.split('/').pop() || 'index.html';
+  
+  const links = document.querySelectorAll('.nav-link');
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === page || (page === '' && href === 'index.html')) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+}
+
+// Show Toast Notification
+function showToast(message, type = 'success') {
+  let toast = document.getElementById('toastMsg');
+  
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toastMsg';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  
+  toast.textContent = message;
+  toast.className = `toast show ${type}`;
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+// Initialize everything on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  initStorage();
+  initTheme();
+  initAdminModal();
+  initNav();
+  // Small delay for scroll reveal to ensure layout is ready
+  setTimeout(initScrollReveal, 100);
+});

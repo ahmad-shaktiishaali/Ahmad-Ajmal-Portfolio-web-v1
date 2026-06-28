@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poetfolio | Contact & Achievements</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark">
+
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <div class="nav-left">
+      <button class="btn-diamond" id="adminBtn" title="Admin Access">◆</button>
+    </div>
+    <div class="nav-center">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="work.html" class="nav-link">Work</a>
+      <a href="contact.html" class="nav-link active">Contact</a>
+    </div>
+    <div class="nav-right">
+      <button class="btn-theme-toggle" id="themeToggle" title="Toggle Theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Password Modal -->
+  <div class="modal-overlay" id="passwordModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Admin Access</h3>
+      <form id="passwordForm">
+        <input type="password" id="adminPassword" class="form-input" placeholder="Enter Password" required>
+        <div class="password-error" id="passwordError"></div>
+        <button type="submit" class="btn-primary">Enter Dashboard</button>
+      </form>
+      <button class="btn-icon" id="closeModal" style="position: absolute; top: 1rem; right: 1rem;">✕</button>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+    <!-- Contact Info Section -->
+    <section class="contact-hero">
+      <h1 class="section-title reveal">Let's Create Together.</h1>
+      <p class="section-subtitle reveal" style="margin: 0 auto;">Open for new opportunities and collaborations.</p>
+      
+      <div class="contact-info-grid reveal reveal-delay-2" style="max-width: 800px; margin: 3rem auto;">
+        <div class="contact-card">
+          <div class="contact-card-icon">✉</div>
+          <div class="contact-card-label">Email</div>
+          <div class="contact-card-value">
+            <a href="#" id="contactEmail">Loading...</a>
+          </div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">📍</div>
+          <div class="contact-card-label">Location</div>
+          <div class="contact-card-value">Worldwide / Remote</div>
+        </div>
+      </div>
+      
+      <a href="mailto:hello@example.com" class="btn-primary reveal reveal-delay-3" id="emailBtn">Send a Message <span>→</span></a>
+    </section>
+
+    <!-- Achievements Section -->
+    <div class="main-content">
+      <section class="section" style="padding-top: 2rem;">
+        <span class="section-label reveal">Recognition</span>
+        <h2 class="section-title reveal">Achievements & Certificates</h2>
+        
+        <div class="achievements-grid" id="achievementsGrid">
+          <!-- Achievements populated via JS -->
+          <div class="empty-state reveal reveal-delay-2" id="achievementsEmpty" style="display: none;">
+            <div class="empty-icon">🏆</div>
+            <div class="empty-text">No achievements yet.</div>
+            <div class="empty-sub">Add some from the admin dashboard.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="currentYear"></span>. Built with <span class="footer-accent">Noir Editorial</span> design.</p>
+  </footer>
+
+  <script src="js/common.js"></script>
+  <script src="js/contact.js"></script>
+</body>
+</html>
