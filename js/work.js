@@ -7,59 +7,62 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
-function loadProjects() {
-  const projectsStr = localStorage.getItem('poetfolio_projects');
+async function loadProjects() {
+  if (!db) return; // Wait for Firebase
+  
   const grid = document.getElementById('projectsGrid');
   const emptyState = document.getElementById('projectsEmpty');
   
   if (!grid) return;
 
-  if (projectsStr) {
-    try {
-      projectsData = JSON.parse(projectsStr);
-      
-      if (projectsData.length === 0) {
-        if (emptyState) emptyState.style.display = 'block';
-        return;
-      }
-      
-      // Sort projects: Top Tier first
-      projectsData.sort((a, b) => (b.isTopTier ? 1 : 0) - (a.isTopTier ? 1 : 0));
-      
-      let html = '';
-      
-      projectsData.forEach((project, index) => {
-        const delayClass = `reveal-delay-${(index % 3) + 1}`;
-        const coverImg = (project.images && project.images.length > 0) 
-          ? project.images[0] 
-          : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
-          
-        const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
-        const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
-          
-        html += `
-          <div class="project-card reveal ${delayClass} ${topTierClass}" data-id="${project.id}">
-            <img src="${coverImg}" alt="${project.title}" class="project-cover">
-            ${badgeHtml}
-            <div class="project-info">
-              <h3 class="project-title">${project.title}</h3>
-              <div class="project-subtitle">${project.subtitle}</div>
-            </div>
-          </div>
-        `;
-      });
-      
-      grid.innerHTML = html;
-      
-      // Re-initialize scroll reveal for new items
-      if (typeof initScrollReveal === 'function') {
-        setTimeout(initScrollReveal, 100);
-      }
-      
-    } catch (e) {
-      console.error("Error parsing projects data", e);
+  try {
+    const projectsDoc = await db.collection('portfolio').doc('projects').get();
+    if (projectsDoc.exists && projectsDoc.data().items) {
+      projectsData = projectsDoc.data().items;
+    } else {
+      projectsData = [];
     }
-  } else {
+    
+    if (projectsData.length === 0) {
+      if (emptyState) emptyState.style.display = 'block';
+      return;
+    }
+    
+    // Sort projects: Top Tier first
+    projectsData.sort((a, b) => (b.isTopTier ? 1 : 0) - (a.isTopTier ? 1 : 0));
+    
+    let html = '';
+    
+    projectsData.forEach((project, index) => {
+      const delayClass = `reveal-delay-${(index % 3) + 1}`;
+      const coverImg = (project.images && project.images.length > 0) 
+        ? project.images[0] 
+        : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
+        
+      const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
+      const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
+        
+      html += `
+        <div class="project-card reveal ${delayClass} ${topTierClass}" data-id="${project.id}">
+          <img src="${coverImg}" alt="${project.title}" class="project-cover">
+          ${badgeHtml}
+          <div class="project-info">
+            <h3 class="project-title">${project.title}</h3>
+            <div class="project-subtitle">${project.subtitle}</div>
+          </div>
+        </div>
+      `;
+    });
+    
+    grid.innerHTML = html;
+    
+    // Re-initialize scroll reveal for new items
+    if (typeof initScrollReveal === 'function') {
+      setTimeout(initScrollReveal, 100);
+    }
+    
+  } catch (e) {
+    console.error("Error loading projects from Firebase", e);
     if (emptyState) emptyState.style.display = 'block';
   }
 }

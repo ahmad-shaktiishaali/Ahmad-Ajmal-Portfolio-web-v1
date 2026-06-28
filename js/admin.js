@@ -76,26 +76,37 @@ function initTabs() {
   });
 }
 
-function loadAllData() {
-  // Load Profile
-  const profileStr = localStorage.getItem('poetfolio_profile');
-  if (profileStr) {
-    profileData = JSON.parse(profileStr);
+async function loadAllData() {
+  if (!db) return; // Wait for Firebase
+  try {
+    // Load Profile
+    const profileDoc = await db.collection('portfolio').doc('profile').get();
+    if (profileDoc.exists) {
+      profileData = profileDoc.data();
+    } else {
+      profileData = DEFAULT_DATA.profile;
+    }
     populateProfileForm();
-  }
 
-  // Load Projects
-  const projectsStr = localStorage.getItem('poetfolio_projects');
-  if (projectsStr) {
-    projectsData = JSON.parse(projectsStr);
+    // Load Projects
+    const projectsDoc = await db.collection('portfolio').doc('projects').get();
+    if (projectsDoc.exists) {
+      projectsData = projectsDoc.data().items || [];
+    } else {
+      projectsData = DEFAULT_DATA.projects;
+    }
     renderProjectsList();
-  }
 
-  // Load Achievements
-  const achievementsStr = localStorage.getItem('poetfolio_achievements');
-  if (achievementsStr) {
-    achievementsData = JSON.parse(achievementsStr);
+    // Load Achievements
+    const achievementsDoc = await db.collection('portfolio').doc('achievements').get();
+    if (achievementsDoc.exists) {
+      achievementsData = achievementsDoc.data().items || [];
+    } else {
+      achievementsData = DEFAULT_DATA.achievements;
+    }
     renderAchievementsList();
+  } catch (err) {
+    console.error("Error loading data from Firebase:", err);
   }
 }
 
@@ -114,7 +125,7 @@ function initProfileForm() {
     }
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     profileData.name = document.getElementById('profileName').value;
@@ -126,8 +137,12 @@ function initProfileForm() {
       profileData.photo = currentProfileImage;
     }
     
-    localStorage.setItem('poetfolio_profile', JSON.stringify(profileData));
-    showToast('Profile updated successfully!');
+    try {
+      if (db) await db.collection('portfolio').doc('profile').set(profileData);
+      showToast('Profile updated successfully!');
+    } catch (err) {
+      alert("Error saving profile: " + err.message);
+    }
   });
 }
 
@@ -221,7 +236,7 @@ function initProjectForm() {
     fileInput.value = '';
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const id = document.getElementById('projectId').value || Date.now().toString();
@@ -244,18 +259,12 @@ function initProjectForm() {
     }
     
     try {
-      localStorage.setItem('poetfolio_projects', JSON.stringify(projectsData));
+      if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
       showToast(isNew ? 'Project created!' : 'Project updated!');
       renderProjectsList();
       closeProjectForm();
     } catch (err) {
-      if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-        alert("Storage limit exceeded! Even with compression, you have saved too many images. Please delete old projects or use fewer images.");
-        // Revert projectsData change
-        projectsData = JSON.parse(localStorage.getItem('poetfolio_projects') || '[]');
-      } else {
-        alert("Error saving project: " + err.message);
-      }
+      alert("Error saving project: " + err.message);
     }
   });
 }
@@ -325,12 +334,16 @@ window.editProject = function(id) {
   if (project) openProjectForm(project);
 }
 
-window.deleteProject = function(id) {
+window.deleteProject = async function(id) {
   if (confirm("Are you sure you want to delete this project?")) {
     projectsData = projectsData.filter(p => p.id !== id);
-    localStorage.setItem('poetfolio_projects', JSON.stringify(projectsData));
-    renderProjectsList();
-    showToast('Project deleted', 'error');
+    try {
+      if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
+      renderProjectsList();
+      showToast('Project deleted', 'error');
+    } catch (err) {
+      alert("Error deleting project: " + err.message);
+    }
   }
 }
 
@@ -383,7 +396,7 @@ function initAchievementForm() {
     }
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     if (!currentAchievementImage) {
@@ -409,11 +422,14 @@ function initAchievementForm() {
       if (index !== -1) achievementsData[index] = achievement;
     }
     
-    localStorage.setItem('poetfolio_achievements', JSON.stringify(achievementsData));
-    showToast(isNew ? 'Achievement created!' : 'Achievement updated!');
-    
-    renderAchievementsList();
-    closeAchievementForm();
+    try {
+      if (db) await db.collection('portfolio').doc('achievements').set({ items: achievementsData });
+      showToast(isNew ? 'Achievement created!' : 'Achievement updated!');
+      renderAchievementsList();
+      closeAchievementForm();
+    } catch(err) {
+      alert("Error saving achievement: " + err.message);
+    }
   });
 }
 
@@ -479,11 +495,15 @@ window.editAchievement = function(id) {
   if (achievement) openAchievementForm(achievement);
 }
 
-window.deleteAchievement = function(id) {
+window.deleteAchievement = async function(id) {
   if (confirm("Are you sure you want to delete this achievement?")) {
     achievementsData = achievementsData.filter(a => a.id !== id);
-    localStorage.setItem('poetfolio_achievements', JSON.stringify(achievementsData));
-    renderAchievementsList();
-    showToast('Achievement deleted', 'error');
+    try {
+      if (db) await db.collection('portfolio').doc('achievements').set({ items: achievementsData });
+      renderAchievementsList();
+      showToast('Achievement deleted', 'error');
+    } catch(err) {
+      alert("Error deleting achievement: " + err.message);
+    }
   }
 }

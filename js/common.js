@@ -29,26 +29,24 @@ const DEFAULT_DATA = {
   achievements: []
 };
 
-// Initialize localStorage if empty
-function initStorage() {
-  if (!localStorage.getItem('poetfolio_profile')) {
-    localStorage.setItem('poetfolio_profile', JSON.stringify(DEFAULT_DATA.profile));
-  }
-  
-  // Force update skills to reflect latest changes
-  localStorage.setItem('poetfolio_skills', JSON.stringify(DEFAULT_DATA.skills));
+const firebaseConfig = {
+  apiKey: "AIzaSyADPThr4D0RvCJnJipz0lkCrdfGPyl8Am4",
+  authDomain: "ahmad-ajmal-portfolio-v1.firebaseapp.com",
+  projectId: "ahmad-ajmal-portfolio-v1",
+  storageBucket: "ahmad-ajmal-portfolio-v1.firebasestorage.app",
+  messagingSenderId: "195162801454",
+  appId: "1:195162801454:web:300eb8866e31ec4680e6bf"
+};
 
-  // Force update experience to reflect latest changes
-  localStorage.setItem('poetfolio_experience', JSON.stringify(DEFAULT_DATA.experience));
-  if (!localStorage.getItem('poetfolio_studios')) {
-    localStorage.setItem('poetfolio_studios', JSON.stringify(DEFAULT_DATA.studios));
-  }
-  if (!localStorage.getItem('poetfolio_projects')) {
-    localStorage.setItem('poetfolio_projects', JSON.stringify(DEFAULT_DATA.projects));
-  }
-  if (!localStorage.getItem('poetfolio_achievements')) {
-    localStorage.setItem('poetfolio_achievements', JSON.stringify(DEFAULT_DATA.achievements));
-  }
+// Initialize Firebase
+let db;
+if (typeof firebase !== 'undefined') {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+}
+
+function initStorage() {
+  // Legacy function kept to prevent undefined errors
 }
 
 // Theme Management
