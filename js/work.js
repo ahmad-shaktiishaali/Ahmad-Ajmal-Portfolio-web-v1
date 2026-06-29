@@ -3,6 +3,9 @@ let projectsData = [];
 let categoriesData = ['Default'];
 let activeCategory = 'All';
 let searchQuery = '';
+const PROJECT_LOADER_MIN_MS = 650;
+let projectsLoadingStartedAt = 0;
+let projectsLoadingTimer = null;
 
 function projectsCollection() {
   return db.collection('portfolio').doc('projects').collection('items');
@@ -23,6 +26,7 @@ async function loadProjectsFromFirebase() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  setProjectsLoading(true);
   loadProjects();
   initProjectOverlay();
   initProjectSearch();
@@ -30,7 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadProjects() {
-  if (!db) return;
+  if (!db) {
+    setProjectsLoading(false);
+    renderProjects([]);
+    return;
+  }
   
   try {
     const [projects, catDoc] = await Promise.all([
@@ -53,7 +61,41 @@ async function loadProjects() {
   } catch (e) {
     console.error("Error loading projects from Firebase", e);
     renderProjects([]);
+  } finally {
+    setProjectsLoading(false);
   }
+}
+
+function setProjectsLoading(isLoading) {
+  const loader = document.getElementById('projectsLoader');
+  const grid = document.getElementById('projectsGrid');
+
+  if (projectsLoadingTimer) {
+    clearTimeout(projectsLoadingTimer);
+    projectsLoadingTimer = null;
+  }
+
+  if (isLoading) {
+    projectsLoadingStartedAt = Date.now();
+  }
+
+  const updateLoadingState = () => {
+    if (loader) loader.classList.toggle('active', isLoading);
+    if (grid) grid.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+  };
+
+  if (!isLoading) {
+    const elapsed = Date.now() - projectsLoadingStartedAt;
+    const remaining = Math.max(0, PROJECT_LOADER_MIN_MS - elapsed);
+    projectsLoadingTimer = setTimeout(updateLoadingState, remaining);
+    return;
+  }
+
+  if (grid) {
+    grid.innerHTML = '';
+  }
+
+  updateLoadingState();
 }
 
 function renderCategoryFilters() {
@@ -97,43 +139,52 @@ function applyFilters() {
 
 function renderSafeHtml(str) {
   if (!str) return '';
-  const allowedTags = /<\/?(strong|em|b|i|a|span|br)(\s[^>]*)?>/gi;
-  const placeholders = [];
-  let idx = 0;
+  const template = document.createElement('template');
+  template.innerHTML = str;
+  const allowedTags = new Set(['A', 'BR', 'STRONG', 'B', 'EM', 'I', 'SPAN', 'UL', 'OL', 'LI']);
 
-  const saved = str.replace(allowedTags, (match) => {
-    const ph = `\x00FMT${idx}\x00`;
-    placeholders.push(match);
-    idx++;
-    return ph;
-  });
-
-  const escaped = saved
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-
-  return escaped.replace(/\x00FMT\d+\x00/g, (match) => {
-    const phIdx = parseInt(match.replace(/\x00FMT(\d+)\x00/, '$1'), 10);
-    const original = placeholders[phIdx];
-    const lower = original.toLowerCase();
-    if (lower.startsWith('</')) return original;
-    if (lower.startsWith('<br')) return '<br>';
-    if (lower.startsWith('<strong') || lower.startsWith('<b')) return '<strong>';
-    if (lower.startsWith('<em') || lower.startsWith('<i')) return '<em>';
-    if (lower.startsWith('<a ')) {
-      const hrefMatch = original.match(/href="([^"]*)"/i);
-      const url = hrefMatch ? hrefMatch[1].replace(/"/g, '&quot;') : '#';
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">`;
+  function cleanNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent);
     }
-    if (lower.startsWith('<span')) {
-      const colorMatch = original.match(/style="color:([^"]*)"/i);
-      const color = colorMatch ? colorMatch[1].replace(/"/g, '&quot;') : 'inherit';
-      return `<span style="color:${color}">`;
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return document.createTextNode('');
     }
-    return '';
-  });
+
+    if (!allowedTags.has(node.tagName)) {
+      const fragment = document.createDocumentFragment();
+      node.childNodes.forEach(child => fragment.appendChild(cleanNode(child)));
+      return fragment;
+    }
+
+    const tagName = node.tagName === 'B' ? 'strong' : node.tagName === 'I' ? 'em' : node.tagName.toLowerCase();
+    const el = document.createElement(tagName);
+
+    if (node.tagName === 'A') {
+      const href = node.getAttribute('href') || '#';
+      const safeHref = /^(https?:|mailto:|tel:|#)/i.test(href) ? href : '#';
+      el.setAttribute('href', safeHref);
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+      el.className = 'safe-rich-link';
+    }
+
+    if (node.tagName === 'SPAN') {
+      const color = node.style?.color;
+      if (color) el.style.color = color;
+    }
+
+    node.childNodes.forEach(child => el.appendChild(cleanNode(child)));
+    return el;
+  }
+
+  const cleanFragment = document.createDocumentFragment();
+  template.content.childNodes.forEach(child => cleanFragment.appendChild(cleanNode(child)));
+
+  const output = document.createElement('div');
+  output.appendChild(cleanFragment);
+  return output.innerHTML;
 }
 
 function renderProjects(data) {
@@ -142,8 +193,14 @@ function renderProjects(data) {
   if (!grid) return;
   
   if (data.length === 0) {
-    grid.innerHTML = '';
-    if (emptyState) emptyState.style.display = 'block';
+    grid.innerHTML = `
+      <div class="empty-state reveal reveal-delay-2">
+        <div class="empty-icon">ðŸ“</div>
+        <div class="empty-text">No projects yet.</div>
+        <div class="empty-sub">Add some from the admin dashboard.</div>
+      </div>
+    `;
+    if (emptyState) emptyState.style.display = 'none';
     return;
   }
   if (emptyState) emptyState.style.display = 'none';
