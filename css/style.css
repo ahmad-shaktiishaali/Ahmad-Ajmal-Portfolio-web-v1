@@ -54,6 +54,81 @@ body.light {
   --nav-bg: rgba(245,242,237,0.9);
 }
 
+body.maroon {
+  --bg-primary: #1a0b0b;
+  --bg-secondary: #2a1111;
+  --bg-tertiary: #3a1818;
+  --bg-card: #251010;
+  --text-primary: #f5ebeb;
+  --text-secondary: #d1b8b8;
+  --text-muted: #9e7f7f;
+  --accent: #d4af37;
+  --accent-hover: #efc340;
+  --accent-dim: rgba(212,175,55,0.12);
+  --accent-glow: rgba(212,175,55,0.08);
+  --border: rgba(255,255,255,0.08);
+  --border-accent: rgba(212,175,55,0.25);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.5);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.35);
+  --overlay-bg: rgba(26,11,11,0.92);
+  --input-bg: #2a1111;
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --nav-bg: rgba(26,11,11,0.85);
+}
+
+body.ocean {
+  --bg-primary: #05101a;
+  --bg-secondary: #0a1b2b;
+  --bg-tertiary: #0f273d;
+  --bg-card: #0b1f32;
+  --text-primary: #e6f0f7;
+  --text-secondary: #a3c2db;
+  --text-muted: #6b8ea8;
+  --accent: #00d2ff;
+  --accent-hover: #3ae0ff;
+  --accent-dim: rgba(0,210,255,0.12);
+  --accent-glow: rgba(0,210,255,0.08);
+  --border: rgba(255,255,255,0.08);
+  --border-accent: rgba(0,210,255,0.25);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.5);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.35);
+  --overlay-bg: rgba(5,16,26,0.92);
+  --input-bg: #0a1b2b;
+  --danger: #ff4757;
+  --success: #2ed573;
+  --nav-bg: rgba(5,16,26,0.85);
+}
+
+body.forest {
+  --bg-primary: #0a1a10;
+  --bg-secondary: #122c1b;
+  --bg-tertiary: #194026;
+  --bg-card: #102617;
+  --text-primary: #e6f7eb;
+  --text-secondary: #99ccaa;
+  --text-muted: #669977;
+  --accent: #ffb142;
+  --accent-hover: #ffcc70;
+  --accent-dim: rgba(255,177,66,0.12);
+  --accent-glow: rgba(255,177,66,0.08);
+  --border: rgba(255,255,255,0.08);
+  --border-accent: rgba(255,177,66,0.25);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.5);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.35);
+  --overlay-bg: rgba(10,26,16,0.92);
+  --input-bg: #122c1b;
+  --danger: #ff5252;
+  --success: #33d9b2;
+  --nav-bg: rgba(10,26,16,0.85);
+}
+
 /* ========== BASE STYLES ========== */
 html { scroll-behavior: smooth; font-size: 16px; }
 
@@ -148,6 +223,75 @@ h1, h2, h3, h4, h5 {
   height: 36px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ========== ADMIN SAVING OVERLAY ========== */
+.admin-loading-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.admin-loading-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loader-anim {
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+
+.loader-anim div {
+  box-sizing: border-box;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 6px solid var(--accent);
+  border-radius: 50%;
+  animation: loader-anim 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: var(--accent) transparent transparent transparent;
+}
+.loader-anim div:nth-child(1) { animation-delay: -0.45s; }
+.loader-anim div:nth-child(2) { animation-delay: -0.3s; }
+.loader-anim div:nth-child(3) { animation-delay: -0.15s; }
+
+@keyframes loader-anim {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 1rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
   justify-content: center;
   cursor: pointer;
   transform: rotate(0deg);

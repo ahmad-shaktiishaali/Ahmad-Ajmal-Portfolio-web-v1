@@ -54,10 +54,25 @@ function initTheme() {
   const toggleBtn = document.getElementById('themeToggle');
   const icon = toggleBtn?.querySelector('.theme-icon');
   
-  // Check saved theme
-  const savedTheme = localStorage.getItem('poetfolio_theme') || 'dark';
-  document.body.className = savedTheme;
-  updateThemeIcon(icon, savedTheme);
+  // 1. Initial load from local storage
+  let currentTheme = localStorage.getItem('poetfolio_theme') || 'dark';
+  document.body.className = currentTheme;
+  updateThemeIcon(icon, currentTheme);
+
+  // 2. Fetch global setting from Firebase
+  if (db) {
+    db.collection('portfolio').doc('settings').get().then(doc => {
+      if (doc.exists && doc.data().theme) {
+        const globalTheme = doc.data().theme;
+        if (globalTheme !== currentTheme) {
+          currentTheme = globalTheme;
+          document.body.className = currentTheme;
+          localStorage.setItem('poetfolio_theme', currentTheme);
+          updateThemeIcon(icon, currentTheme);
+        }
+      }
+    }).catch(err => console.log('Error loading global theme:', err));
+  }
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {

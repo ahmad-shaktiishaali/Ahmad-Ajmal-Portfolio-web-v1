@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initProfileForm();
   initProjectForm();
   initAchievementForm();
+  initSettingsForm();
 });
 
 function initTabs() {
@@ -152,9 +153,12 @@ function initProfileForm() {
     }
     
     try {
+      showLoading();
       if (db) await db.collection('portfolio').doc('profile').set(profileData);
+      hideLoading();
       showToast('Profile updated successfully!');
     } catch (err) {
+      hideLoading();
       alert("Error saving profile: " + err.message);
     }
   });
@@ -273,11 +277,14 @@ function initProjectForm() {
     }
     
     try {
+      showLoading();
       if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
+      hideLoading();
       showToast(isNew ? 'Project created!' : 'Project updated!');
       renderProjectsList();
       closeProjectForm();
     } catch (err) {
+      hideLoading();
       alert("Error saving project: " + err.message);
     }
   });
@@ -437,11 +444,14 @@ function initAchievementForm() {
     }
     
     try {
+      showLoading();
       if (db) await db.collection('portfolio').doc('achievements').set({ items: achievementsData });
+      hideLoading();
       showToast(isNew ? 'Achievement created!' : 'Achievement updated!');
       renderAchievementsList();
       closeAchievementForm();
     } catch(err) {
+      hideLoading();
       alert("Error saving achievement: " + err.message);
     }
   });
@@ -520,4 +530,74 @@ window.deleteAchievement = async function(id) {
       alert("Error deleting achievement: " + err.message);
     }
   }
+}
+
+/* ================= SETTINGS / THEMES LOGIC ================= */
+let selectedGlobalTheme = 'dark'; // Default
+
+function initSettingsForm() {
+  const themeBtns = document.querySelectorAll('.theme-select-btn');
+  const saveBtn = document.getElementById('btnSaveGlobalTheme');
+  
+  // Load current settings if available
+  if (db) {
+    db.collection('portfolio').doc('settings').get().then(doc => {
+      if (doc.exists && doc.data().theme) {
+        selectedGlobalTheme = doc.data().theme;
+        updateActiveThemeBtn(selectedGlobalTheme);
+      }
+    }).catch(err => console.log("No global theme loaded", err));
+  }
+  
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-theme');
+      selectedGlobalTheme = theme;
+      
+      // Preview it locally
+      document.body.className = theme;
+      
+      updateActiveThemeBtn(theme);
+    });
+  });
+  
+  saveBtn.addEventListener('click', async () => {
+    try {
+      showLoading();
+      if (db) {
+        await db.collection('portfolio').doc('settings').set({
+          theme: selectedGlobalTheme
+        }, { merge: true });
+      }
+      hideLoading();
+      showToast('Global theme updated!');
+    } catch (err) {
+      hideLoading();
+      alert("Error saving theme: " + err.message);
+    }
+  });
+}
+
+function updateActiveThemeBtn(theme) {
+  const themeBtns = document.querySelectorAll('.theme-select-btn');
+  themeBtns.forEach(b => {
+    if (b.getAttribute('data-theme') === theme) {
+      b.style.boxShadow = '0 0 0 3px var(--accent)';
+      b.style.transform = 'scale(1.05)';
+    } else {
+      b.style.boxShadow = 'none';
+      b.style.transform = 'scale(1)';
+    }
+  });
+}
+
+/* ================= LOADING ANIMATION ================= */
+function showLoading() {
+  const overlay = document.getElementById('adminLoadingOverlay');
+  if (overlay) overlay.classList.add('active');
+}
+
+function hideLoading() {
+  const overlay = document.getElementById('adminLoadingOverlay');
+  if (overlay) overlay.classList.remove('active');
 }

@@ -32,6 +32,7 @@
       <button class="admin-tab active" data-target="profileSection">Profile</button>
       <button class="admin-tab" data-target="projectsSection">Projects</button>
       <button class="admin-tab" data-target="achievementsSection">Achievements</button>
+      <button class="admin-tab" data-target="settingsSection">Settings & Themes</button>
     </aside>
 
     <main class="admin-main">
@@ -208,6 +209,29 @@
           </form>
         </div>
       </section>
+
+      <!-- ================= SETTINGS SECTION ================= -->
+      <section class="admin-section" id="settingsSection">
+        <h2 class="admin-section-title">Settings & Themes</h2>
+        <p class="admin-section-desc">Change the default look and feel of your website globally.</p>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 2rem; border-radius: 8px;">
+          <h3 style="margin-bottom: 0.5rem;">Global Website Theme</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">Select the default theme that visitors will see when they visit your site.</p>
+          
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap;" id="themeSelectorContainer">
+            <button class="btn-secondary theme-select-btn" data-theme="dark" style="background: #0a0a0b; color: #fff;">Dark (Default)</button>
+            <button class="btn-secondary theme-select-btn" data-theme="light" style="background: #f5f2ed; color: #1a1a1a;">Light</button>
+            <button class="btn-secondary theme-select-btn" data-theme="maroon" style="background: #1a0b0b; color: #f5ebeb; border-color: #d4af37;">Premium Maroon</button>
+            <button class="btn-secondary theme-select-btn" data-theme="ocean" style="background: #05101a; color: #e6f0f7; border-color: #00d2ff;">Deep Ocean</button>
+            <button class="btn-secondary theme-select-btn" data-theme="forest" style="background: #0a1a10; color: #e6f7eb; border-color: #ffb142;">Emerald Forest</button>
+          </div>
+          
+          <div style="margin-top: 2rem;">
+             <button class="btn-primary" id="btnSaveGlobalTheme">Save Theme</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -215,5 +239,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <script src="js/common.js"></script>
   <script src="js/admin.js"></script>
+
+  <!-- Loading Overlay -->
+  <div class="admin-loading-overlay" id="adminLoadingOverlay">
+    <div class="loader-anim">
+      <div></div><div></div><div></div><div></div>
+    </div>
+    <div class="loading-text">Saving...</div>
+  </div>
 </body>
 </html>
