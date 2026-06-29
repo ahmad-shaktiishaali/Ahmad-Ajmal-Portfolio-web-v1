@@ -81,40 +81,42 @@ function applyFilters() {
   renderProjects(filtered);
 }
 
-function sanitizeHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 function renderSafeHtml(str) {
   if (!str) return '';
-  const allowedTags = /<\/?(strong|em|b|i|a|span|br)[^>]*>/gi;
-  const escaped = str
+  const allowedTags = /<\/?(strong|em|b|i|a|span|br)(\s[^>]*)?>/gi;
+  const placeholders = [];
+  let idx = 0;
+
+  const saved = str.replace(allowedTags, (match) => {
+    const ph = `\x00FMT${idx}\x00`;
+    placeholders.push(match);
+    idx++;
+    return ph;
+  });
+
+  const escaped = saved
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-  return escaped.replace(allowedTags, (match) => {
-    const lower = match.toLowerCase();
-    if (lower.startsWith('</')) return match;
+
+  return escaped.replace(/\x00FMT\d+\x00/g, (match) => {
+    const phIdx = parseInt(match.replace(/\x00FMT(\d+)\x00/, '$1'), 10);
+    const original = placeholders[phIdx];
+    const lower = original.toLowerCase();
+    if (lower.startsWith('</')) return original;
     if (lower.startsWith('<br')) return '<br>';
-    if (lower.startsWith('<strong')) return match;
-    if (lower.startsWith('<em')) return match;
-    if (lower.startsWith('<b')) return match;
-    if (lower.startsWith('<i')) return match;
+    if (lower.startsWith('<strong') || lower.startsWith('<b')) return '<strong>';
+    if (lower.startsWith('<em') || lower.startsWith('<i')) return '<em>';
     if (lower.startsWith('<a ')) {
-      const hrefMatch = match.match(/href="([^"]*)"/i);
-      const url = hrefMatch ? hrefMatch[1] : '#';
-      return `<a href="${sanitizeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">`;
+      const hrefMatch = original.match(/href="([^"]*)"/i);
+      const url = hrefMatch ? hrefMatch[1].replace(/"/g, '&quot;') : '#';
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">`;
     }
     if (lower.startsWith('<span')) {
-      const colorMatch = match.match(/style="color:([^"]*)"/i);
-      const color = colorMatch ? colorMatch[1] : 'inherit';
-      return `<span style="color:${sanitizeHtml(color)}">`;
+      const colorMatch = original.match(/style="color:([^"]*)"/i);
+      const color = colorMatch ? colorMatch[1].replace(/"/g, '&quot;') : 'inherit';
+      return `<span style="color:${color}">`;
     }
     return '';
   });
