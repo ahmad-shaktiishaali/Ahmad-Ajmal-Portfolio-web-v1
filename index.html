@@ -8,6 +8,21 @@
 </head>
 <body class="dark">
 
+  <!-- Cursor Elements -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div id="cursorTrails"></div>
+
+  <!-- Page Transition Overlay -->
+  <div class="page-transition" id="pageTransition"></div>
+
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-logo">Poetfolio</div>
+    <div class="preloader-bar">
+      <div class="preloader-bar-fill"></div>
+    </div>
+  </div>
+
   <!-- Navigation -->
   <nav class="nav-bar">
     <div class="nav-left">
@@ -44,7 +59,7 @@
       <div class="hero-content">
         <div class="hero-photo-container reveal reveal-delay-1">
           <div class="hero-photo-frame">
-            <!-- Image source populated via JS -->
+            <div class="skeleton" style="position: absolute; inset: 0; z-index: 3;"></div>
             <img src="assets/profile.jpg" alt="Profile" class="hero-photo" id="heroPhoto" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%23c8a951\\\' fill-opacity=\\\'0.2\\\'/%3E%3C/svg%3E'">
           </div>
           <div class="hero-accent-line"></div>
@@ -53,10 +68,10 @@
         
         <div class="hero-info">
           <div class="hero-greeting reveal reveal-delay-2">Hello, I am</div>
-          <h1 class="hero-name reveal reveal-delay-2" id="heroName">Loading...</h1>
-          <div class="hero-title-text reveal reveal-delay-3" id="heroTitle"></div>
-          <div class="hero-email reveal reveal-delay-3" id="heroEmail"></div>
-          <p class="hero-bio reveal reveal-delay-4" id="heroBio"></p>
+          <h1 class="hero-name reveal reveal-delay-2 skeleton" id="heroName">Loading...</h1>
+          <div class="hero-title-text reveal reveal-delay-3 skeleton" id="heroTitle">Loading...</div>
+          <div class="hero-email reveal reveal-delay-3 skeleton" id="heroEmail">Loading...</div>
+          <p class="hero-bio reveal reveal-delay-4 skeleton" id="heroBio">Loading...</p>
           
           <div class="hero-stats reveal reveal-delay-4">
             50+ Projects made <br>
@@ -79,7 +94,10 @@
         <p class="section-subtitle reveal">Technical and creative abilities honed over years of dedicated practice.</p>
         
         <div class="skills-grid" id="skillsContainer">
-          <!-- Skills populated via JS -->
+          <div class="skeleton-skill skeleton"></div>
+          <div class="skeleton-skill skeleton"></div>
+          <div class="skeleton-skill skeleton"></div>
+          <div class="skeleton-skill skeleton"></div>
         </div>
       </section>
 
@@ -90,7 +108,16 @@
         <p class="section-subtitle reveal">A timeline of my professional roles and achievements.</p>
         
         <div class="timeline" id="experienceContainer">
-          <!-- Experience populated via JS -->
+          <div class="timeline-item">
+            <div class="skeleton skeleton-text skeleton-text-sm" style="margin-bottom: 0.4rem;"></div>
+            <div class="skeleton skeleton-text skeleton-text-md" style="margin-bottom: 0.2rem;"></div>
+            <div class="skeleton skeleton-text skeleton-text-sm" style="width: 50%;"></div>
+          </div>
+          <div class="timeline-item">
+            <div class="skeleton skeleton-text skeleton-text-sm" style="margin-bottom: 0.4rem;"></div>
+            <div class="skeleton skeleton-text skeleton-text-md" style="margin-bottom: 0.2rem;"></div>
+            <div class="skeleton skeleton-text skeleton-text-sm" style="width: 50%;"></div>
+          </div>
         </div>
       </section>
 
@@ -101,7 +128,9 @@
         <p class="section-subtitle reveal">Places and teams I've had the pleasure of working with.</p>
         
         <div class="studios-list reveal reveal-delay-2" id="studiosContainer">
-          <!-- Studios populated via JS -->
+          <div class="skeleton skeleton-text skeleton-text-sm" style="width: 80px; height: 32px; display: inline-block;"></div>
+          <div class="skeleton skeleton-text skeleton-text-sm" style="width: 100px; height: 32px; display: inline-block;"></div>
+          <div class="skeleton skeleton-text skeleton-text-sm" style="width: 90px; height: 32px; display: inline-block;"></div>
         </div>
       </section>
     </div>

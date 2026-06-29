@@ -60,6 +60,16 @@ async function loadProjects() {
     if (typeof initScrollReveal === 'function') {
       setTimeout(initScrollReveal, 100);
     }
+    // Re-init tilt on new cards
+    if (typeof initTilt === 'function') {
+      setTimeout(initTilt, 200);
+    }
+    // Re-init search on new cards
+    if (typeof initSearch === 'function') {
+      setTimeout(initSearch, 200);
+    }
+    
+    hidePreloader();
     
   } catch (e) {
     console.error("Error loading projects from Firebase", e);

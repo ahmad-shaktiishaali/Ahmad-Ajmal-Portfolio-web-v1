@@ -204,12 +204,186 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// ========== PRELOADER ==========
+function hidePreloader() {
+  const preloader = document.getElementById('preloader');
+  if (preloader) {
+    preloader.classList.add('hidden');
+  }
+}
+
+// ========== PAGE TRANSITIONS ==========
+function initPageTransitions() {
+  const links = document.querySelectorAll('.nav-link');
+  const transition = document.getElementById('pageTransition');
+
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (!href || href === '#') return;
+
+      e.preventDefault();
+      if (transition) {
+        transition.classList.add('active');
+      }
+      setTimeout(() => {
+        window.location.href = href;
+      }, 350);
+    });
+  });
+}
+
+// ========== CUSTOM CURSOR ==========
+function initCursor() {
+  // Only on devices with a real mouse
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+  const dot = document.getElementById('cursorDot');
+  const trailContainer = document.getElementById('cursorTrails');
+  if (!dot) return;
+
+  const trails = [];
+  const TRAIL_COUNT = 6;
+
+  // Create trail dots
+  for (let i = 0; i < TRAIL_COUNT; i++) {
+    const t = document.createElement('div');
+    t.className = 'cursor-trail';
+    t.style.transitionDelay = `${i * 30}ms`;
+    trailContainer.appendChild(t);
+    trails.push({ el: t, x: 0, y: 0 });
+  }
+
+  let mouseX = 0, mouseY = 0;
+  let currentX = 0, currentY = 0;
+  let rafId = null;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.left = mouseX + 'px';
+    dot.style.top = mouseY + 'px';
+
+    if (!rafId) {
+      rafId = requestAnimationFrame(updateTrails);
+    }
+  });
+
+  function updateTrails() {
+    // Smooth trailing
+    currentX += (mouseX - currentX) * 0.3;
+    currentY += (mouseY - currentY) * 0.3;
+
+    for (let i = trails.length - 1; i >= 0; i--) {
+      const t = trails[i];
+      if (i === 0) {
+        t.x += (currentX - t.x) * 0.25;
+        t.y += (currentY - t.y) * 0.25;
+      } else {
+        const prev = trails[i - 1];
+        t.x += (prev.x - t.x) * 0.2;
+        t.y += (prev.y - t.y) * 0.2;
+      }
+      t.el.style.left = t.x + 'px';
+      t.el.style.top = t.y + 'px';
+
+      // Fade out later trails
+      t.el.style.opacity = 0.5 - (i / trails.length) * 0.4;
+    }
+
+    rafId = null;
+  }
+
+  // Enlarge on interactive elements
+  document.addEventListener('mouseover', (e) => {
+    const target = e.target.closest('a, button, .project-card, .btn-primary, .btn-secondary, .achievement-card, input, textarea, select');
+    dot.classList.toggle('active', !!target);
+  });
+}
+
+// ========== MOUSE TILT ON PROJECT CARDS ==========
+function initTilt() {
+  const cards = document.querySelectorAll('.project-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      card.style.transform = card.classList.contains('project-card-top-tier')
+        ? `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`
+        : `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = card.classList.contains('project-card-top-tier')
+        ? 'perspective(1000px) translateY(-4px)'
+        : 'perspective(1000px) rotateX(0) rotateY(0)';
+    });
+  });
+}
+
+// ========== SEARCH / FILTER ==========
+function initSearch() {
+  const input = document.getElementById('projectSearch');
+  const clear = document.getElementById('searchClear');
+  const grid = document.getElementById('projectsGrid');
+  if (!input || !grid) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase().trim();
+    clear.classList.toggle('visible', q.length > 0);
+
+    const cards = grid.querySelectorAll('.project-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const title = card.querySelector('.project-title')?.textContent?.toLowerCase() || '';
+      const subtitle = card.querySelector('.project-subtitle')?.textContent?.toLowerCase() || '';
+      const match = !q || title.includes(q) || subtitle.includes(q);
+      card.classList.toggle('hidden', !match);
+      if (match) visibleCount++;
+    });
+
+    // Show/hide no-results
+    let noResults = grid.querySelector('.search-no-results');
+    if (visibleCount === 0 && cards.length > 0) {
+      if (!noResults) {
+        noResults = document.createElement('div');
+        noResults.className = 'search-no-results';
+        noResults.innerHTML = '<div class="search-no-icon">🔍</div><div class="search-no-text">No projects match your search</div><div class="search-no-sub">Try a different keyword</div>';
+        grid.appendChild(noResults);
+      }
+      noResults.style.display = 'block';
+    } else if (noResults) {
+      noResults.style.display = 'none';
+    }
+  });
+
+  if (clear) {
+    clear.addEventListener('click', () => {
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+      input.focus();
+    });
+  }
+}
+
 // Initialize everything on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   initStorage();
   initTheme();
   initAdminModal();
   initNav();
+  initPageTransitions();
+  initCursor();
+  initSearch();
+  initTilt();
   // Small delay for scroll reveal to ensure layout is ready
   setTimeout(initScrollReveal, 100);
+  // Hide preloader after everything is ready
+  setTimeout(hidePreloader, 400);
 });
