@@ -10,7 +10,66 @@ let currentProjectImages = [];
 let currentAchievementImage = null;
 let currentProfileImage = null;
 
-// Helper to compress images before saving to localStorage
+const PROJECT_IMAGE_MAX_SIDE = 720;
+const PROJECT_IMAGE_MAX_DATA_URL_LENGTH = 140000;
+
+function projectsCollection() {
+  return db.collection('portfolio').doc('projects').collection('items');
+}
+
+async function loadProjectsFromFirebase() {
+  const snapshot = await projectsCollection().get();
+  if (!snapshot.empty) {
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  const legacyDoc = await db.collection('portfolio').doc('projects').get();
+  if (legacyDoc.exists && legacyDoc.data().items) {
+    return legacyDoc.data().items;
+  }
+
+  return DEFAULT_DATA.projects;
+}
+
+async function saveAllProjectsToFirebase() {
+  const batch = db.batch();
+  const collectionRef = projectsCollection();
+  const existingSnapshot = await collectionRef.get();
+  const currentIds = new Set(projectsData.map(project => project.id));
+
+  existingSnapshot.docs.forEach(doc => {
+    if (!currentIds.has(doc.id)) {
+      batch.delete(collectionRef.doc(doc.id));
+    }
+  });
+
+  projectsData.forEach(project => {
+    batch.set(collectionRef.doc(project.id), project);
+  });
+
+  batch.set(db.collection('portfolio').doc('projects'), getProjectsMetadataPayload());
+  await batch.commit();
+}
+
+function getProjectsMetadataPayload() {
+  const payload = {
+    storage: 'subcollection',
+    count: projectsData.length,
+    updatedAt: Date.now()
+  };
+
+  if (firebase?.firestore?.FieldValue) {
+    payload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+  }
+
+  return payload;
+}
+
+async function saveProjectsMetadata() {
+  await db.collection('portfolio').doc('projects').set(getProjectsMetadataPayload());
+}
+
+// Helper to compress images before saving to Firebase
 function compressImage(file, callback) {
   const reader = new FileReader();
   reader.onload = function(event) {
@@ -19,7 +78,7 @@ function compressImage(file, callback) {
       const canvas = document.createElement('canvas');
       let width = img.width;
       let height = img.height;
-      const MAX_SIZE = 1000;
+      const MAX_SIZE = PROJECT_IMAGE_MAX_SIDE;
       
       if (width > height) {
         if (width > MAX_SIZE) {
@@ -37,7 +96,27 @@ function compressImage(file, callback) {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-      callback(canvas.toDataURL('image/jpeg', 0.6)); // 60% quality JPEG
+
+      let quality = 0.55;
+      let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+      while (dataUrl.length > PROJECT_IMAGE_MAX_DATA_URL_LENGTH && quality > 0.28) {
+        quality -= 0.07;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      while (dataUrl.length > PROJECT_IMAGE_MAX_DATA_URL_LENGTH && canvas.width > 420 && canvas.height > 420) {
+        const resized = document.createElement('canvas');
+        resized.width = Math.round(canvas.width * 0.85);
+        resized.height = Math.round(canvas.height * 0.85);
+        resized.getContext('2d').drawImage(canvas, 0, 0, resized.width, resized.height);
+        canvas.width = resized.width;
+        canvas.height = resized.height;
+        canvas.getContext('2d').drawImage(resized, 0, 0);
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      callback(dataUrl);
     };
     img.src = event.target.result;
   };
@@ -109,12 +188,7 @@ async function loadAllData() {
   populateProfileForm();
 
   try {
-    const projectsDoc = await db.collection('portfolio').doc('projects').get();
-    if (projectsDoc.exists) {
-      projectsData = projectsDoc.data().items || [];
-    } else {
-      projectsData = DEFAULT_DATA.projects;
-    }
+    projectsData = await loadProjectsFromFirebase();
   } catch (err) {
     console.error("Firebase projects error:", err);
     projectsData = DEFAULT_DATA.projects;
@@ -322,7 +396,7 @@ function initProjectForm() {
     
     try {
       showLoading();
-      if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
+      if (db) await saveAllProjectsToFirebase();
       hideLoading();
       showToast(isNew ? 'Project created!' : 'Project updated!');
       renderProjectsList();
@@ -417,7 +491,7 @@ window.deleteProject = async function(id) {
   if (confirm("Are you sure you want to delete this project?")) {
     projectsData = projectsData.filter(p => p.id !== id);
     try {
-      if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
+      if (db) await saveAllProjectsToFirebase();
       renderProjectsList();
       showToast('Project deleted', 'error');
     } catch (err) {
@@ -797,7 +871,7 @@ window.deleteCategory = async function(idx) {
   categoriesData.splice(idx, 1);
   projectsData.forEach(p => { if (p.category === cat) p.category = 'Default'; });
   await saveCategories();
-  if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
+  if (db) await saveAllProjectsToFirebase();
   renderProjectsList();
 }
 

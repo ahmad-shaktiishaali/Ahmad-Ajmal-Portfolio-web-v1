@@ -840,13 +840,11 @@ h1, h2, h3, h4, h5 {
 /* ========== GOLDEN TOUCH ========== */
 .golden-zone {
   position: relative;
-  width: 100%;
-  max-width: 400px;
+  width: 220px;
   height: 220px;
   margin: 0 auto;
-  border: 1px solid var(--border-accent);
-  border-radius: 20px;
-  background: var(--accent-glow);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(200,169,81,0.15), transparent 60%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -855,13 +853,29 @@ h1, h2, h3, h4, h5 {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
   touch-action: manipulation;
+  transition: box-shadow 0.4s ease;
 }
 
-.golden-zone:hover {
+.golden-zone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 0 30px var(--accent-glow), inset 0 0 30px var(--accent-glow);
+  animation: orbPulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.golden-zone:hover::before {
   border-color: var(--accent);
-  box-shadow: 0 0 40px var(--accent-glow), inset 0 0 40px var(--accent-glow);
+  box-shadow: 0 0 60px var(--accent-glow), inset 0 0 50px var(--accent-glow);
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
 }
 
 .golden-counter {

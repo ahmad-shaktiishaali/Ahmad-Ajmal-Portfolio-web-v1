@@ -4,6 +4,24 @@ let categoriesData = ['Default'];
 let activeCategory = 'All';
 let searchQuery = '';
 
+function projectsCollection() {
+  return db.collection('portfolio').doc('projects').collection('items');
+}
+
+async function loadProjectsFromFirebase() {
+  const snapshot = await projectsCollection().get();
+  if (!snapshot.empty) {
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  const legacyDoc = await db.collection('portfolio').doc('projects').get();
+  if (legacyDoc.exists && legacyDoc.data().items) {
+    return legacyDoc.data().items;
+  }
+
+  return [];
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
   initProjectOverlay();
@@ -15,16 +33,12 @@ async function loadProjects() {
   if (!db) return;
   
   try {
-    const [projectsDoc, catDoc] = await Promise.all([
-      db.collection('portfolio').doc('projects').get(),
+    const [projects, catDoc] = await Promise.all([
+      loadProjectsFromFirebase(),
       db.collection('portfolio').doc('categories').get()
     ]);
     
-    if (projectsDoc.exists && projectsDoc.data().items) {
-      projectsData = projectsDoc.data().items;
-    } else {
-      projectsData = [];
-    }
+    projectsData = projects;
     
     if (catDoc.exists && catDoc.data().items) {
       categoriesData = catDoc.data().items;
