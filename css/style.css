@@ -1371,6 +1371,37 @@ h1, h2, h3, h4, h5 {
   gap: 1rem;
 }
 
+/* Formatting Toolbar */
+.fmt-toolbar {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.fmt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.fmt-btn:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 /* Image Upload */
 .image-upload {
   border: 2px dashed var(--border-accent);

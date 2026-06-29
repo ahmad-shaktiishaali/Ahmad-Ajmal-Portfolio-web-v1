@@ -3,6 +3,7 @@ let profileData = {};
 let projectsData = [];
 let achievementsData = [];
 let experienceData = [];
+let categoriesData = ['Default'];
 
 // Working state for images
 let currentProjectImages = [];
@@ -58,6 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initProjectForm();
   initAchievementForm();
   initExperienceForm();
+  initCategoriesForm();
+  initFormatToolbar('projectSubtitle');
+  initFormatToolbar('projectDetail');
   initSettingsForm();
 });
 
@@ -86,6 +90,8 @@ async function loadAllData() {
     renderAchievementsList();
     experienceData = DEFAULT_DATA.experience;
     renderExperienceList();
+    categoriesData = ['Default'];
+    renderCategoriesList();
     return;
   }
   
@@ -140,6 +146,19 @@ async function loadAllData() {
     experienceData = DEFAULT_DATA.experience;
   }
   renderExperienceList();
+
+  try {
+    const catDoc = await db.collection('portfolio').doc('categories').get();
+    if (catDoc.exists && catDoc.data().items) {
+      categoriesData = catDoc.data().items;
+    } else {
+      categoriesData = ['Default'];
+    }
+  } catch (err) {
+    console.error("Firebase categories error:", err);
+    categoriesData = ['Default'];
+  }
+  renderCategoriesList();
 }
 
 /* ================= PROFILE LOGIC ================= */
@@ -283,7 +302,8 @@ function initProjectForm() {
       subtitle: document.getElementById('projectSubtitle').value,
       detail: document.getElementById('projectDetail').value,
       isTopTier: document.getElementById('projectIsTopTier').checked,
-      images: currentProjectImages
+      images: currentProjectImages,
+      category: document.getElementById('projectCategory').value || 'Default'
     };
     
     if (isNew) {
@@ -335,6 +355,16 @@ window.removeProjectImage = function(index) {
   renderProjectImages();
 }
 
+function populateCategoryDropdown(selected) {
+  const sel = document.getElementById('projectCategory');
+  if (!sel) return;
+  let opts = '';
+  categoriesData.forEach(c => {
+    opts += `<option value="${c}"${c === selected ? ' selected' : ''}>${c}</option>`;
+  });
+  sel.innerHTML = opts;
+}
+
 function openProjectForm(project = null) {
   document.getElementById('projectsListContainer').style.display = 'none';
   document.getElementById('btnAddNewProject').style.display = 'none';
@@ -351,11 +381,13 @@ function openProjectForm(project = null) {
     document.getElementById('projectDetail').value = project.detail;
     document.getElementById('projectIsTopTier').checked = !!project.isTopTier;
     currentProjectImages = [...(project.images || [])];
+    populateCategoryDropdown(project.category || 'Default');
   } else {
     document.getElementById('projectFormTitle').textContent = 'Add New Project';
     document.getElementById('projectId').value = '';
     document.getElementById('projectIsTopTier').checked = false;
     currentProjectImages = [];
+    populateCategoryDropdown('Default');
   }
   
   renderProjectImages();
@@ -661,6 +693,129 @@ window.deleteExperience = async function(idx) {
     } catch (err) {
       alert("Error deleting experience: " + err.message);
     }
+  }
+}
+
+/* ================= FORMATTING TOOLBAR ================= */
+function initFormatToolbar(textareaId) {
+  const ta = document.getElementById(textareaId);
+  if (!ta) return;
+
+  document.querySelectorAll(`.fmt-toolbar[data-target="${textareaId}"] .fmt-btn`).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tag = btn.getAttribute('data-tag');
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const val = ta.value;
+      const before = val.substring(0, start);
+      const selected = val.substring(start, end);
+      const after = val.substring(end);
+
+      let insert;
+      switch (tag) {
+        case 'bold':
+          insert = `<strong>${selected}</strong>`;
+          break;
+        case 'italic':
+          insert = `<em>${selected}</em>`;
+          break;
+        case 'link': {
+          const url = prompt('Enter URL:', 'https://');
+          if (!url) return;
+          insert = selected
+            ? `<a href="${url}" target="_blank">${selected}</a>`
+            : `<a href="${url}" target="_blank">${url}</a>`;
+          break;
+        }
+        case 'color': {
+          const color = prompt('Enter color (hex, name):', '#c8a951');
+          if (!color) return;
+          insert = selected
+            ? `<span style="color:${color}">${selected}</span>`
+            : `<span style="color:${color}">text</span>`;
+          break;
+        }
+        case 'icon': {
+          const icon = prompt('Enter emoji or icon:', '✨');
+          if (!icon) return;
+          insert = before.trim() && !before.endsWith('\n') ? icon : icon;
+          break;
+        }
+        default:
+          return;
+      }
+
+      ta.focus();
+      ta.value = before + insert + after;
+      const pos = before.length + insert.length;
+      ta.setSelectionRange(pos, pos);
+      ta.dispatchEvent(new Event('input'));
+    });
+  });
+}
+
+/* ================= CATEGORIES LOGIC ================= */
+function renderCategoriesList() {
+  const list = document.getElementById('adminCategoriesList');
+  if (!list) return;
+
+  if (categoriesData.length === 0) {
+    list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No categories. "Default" will be used.</div>';
+    return;
+  }
+
+  let html = '';
+  categoriesData.forEach((cat, idx) => {
+    const isDefault = cat === 'Default';
+    html += `
+      <div class="admin-list-item">
+        <div class="admin-list-info">
+          <div class="admin-list-title">${cat}${isDefault ? ' <span style="font-size:0.65rem;color:var(--accent);font-weight:600;">— DEFAULT</span>' : ''}</div>
+        </div>
+        <div class="admin-item-actions">
+          ${isDefault ? '' : `<button class="btn-danger" onclick="deleteCategory('${idx}')">Delete</button>`}
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+}
+
+function initCategoriesForm() {
+  const addBtn = document.getElementById('btnAddNewCategory');
+  if (!addBtn) return;
+
+  addBtn.addEventListener('click', () => {
+    const name = prompt('Enter category name:');
+    if (!name || !name.trim()) return;
+    const trimmed = name.trim();
+    if (categoriesData.includes(trimmed)) {
+      alert('Category already exists.');
+      return;
+    }
+    categoriesData.push(trimmed);
+    saveCategories();
+  });
+}
+
+window.deleteCategory = async function(idx) {
+  const cat = categoriesData[idx];
+  if (cat === 'Default') return;
+  if (!confirm(`Delete "${cat}"? Projects in this category will move to "Default".`)) return;
+  categoriesData.splice(idx, 1);
+  projectsData.forEach(p => { if (p.category === cat) p.category = 'Default'; });
+  await saveCategories();
+  if (db) await db.collection('portfolio').doc('projects').set({ items: projectsData });
+  renderProjectsList();
+}
+
+async function saveCategories() {
+  try {
+    if (db) await db.collection('portfolio').doc('categories').set({ items: categoriesData });
+    renderCategoriesList();
+    showToast('Categories updated!');
+  } catch (err) {
+    alert("Error saving categories: " + err.message);
   }
 }
 

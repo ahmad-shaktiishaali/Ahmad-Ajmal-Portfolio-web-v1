@@ -1,5 +1,8 @@
 let currentScrollY = 0;
 let projectsData = [];
+let categoriesData = ['Default'];
+let activeCategory = 'All';
+let searchQuery = '';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
@@ -12,20 +15,109 @@ async function loadProjects() {
   if (!db) return;
   
   try {
-    const projectsDoc = await db.collection('portfolio').doc('projects').get();
+    const [projectsDoc, catDoc] = await Promise.all([
+      db.collection('portfolio').doc('projects').get(),
+      db.collection('portfolio').doc('categories').get()
+    ]);
+    
     if (projectsDoc.exists && projectsDoc.data().items) {
       projectsData = projectsDoc.data().items;
     } else {
       projectsData = [];
     }
     
+    if (catDoc.exists && catDoc.data().items) {
+      categoriesData = catDoc.data().items;
+    } else {
+      categoriesData = ['Default'];
+    }
+    
     projectsData.sort((a, b) => (b.isTopTier ? 1 : 0) - (a.isTopTier ? 1 : 0));
-    renderProjects(projectsData);
+    renderCategoryFilters();
+    applyFilters();
     
   } catch (e) {
     console.error("Error loading projects from Firebase", e);
     renderProjects([]);
   }
+}
+
+function renderCategoryFilters() {
+  const container = document.getElementById('categoryFilters');
+  if (!container) return;
+  
+  let html = `<button class="category-btn active" data-cat="All">All</button>`;
+  categoriesData.forEach(cat => {
+    html += `<button class="category-btn" data-cat="${cat}">${cat}</button>`;
+  });
+  container.innerHTML = html;
+  
+  container.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = btn.getAttribute('data-cat');
+      applyFilters();
+    });
+  });
+}
+
+function applyFilters() {
+  let filtered = projectsData;
+  
+  if (activeCategory !== 'All') {
+    filtered = filtered.filter(p => (p.category || 'Default') === activeCategory);
+  }
+  
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(p =>
+      (p.title && p.title.toLowerCase().includes(q)) ||
+      (p.subtitle && p.subtitle.toLowerCase().includes(q)) ||
+      (p.detail && p.detail.toLowerCase().includes(q))
+    );
+  }
+  
+  renderProjects(filtered);
+}
+
+function sanitizeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderSafeHtml(str) {
+  if (!str) return '';
+  const allowedTags = /<\/?(strong|em|b|i|a|span|br)[^>]*>/gi;
+  const escaped = str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  return escaped.replace(allowedTags, (match) => {
+    const lower = match.toLowerCase();
+    if (lower.startsWith('</')) return match;
+    if (lower.startsWith('<br')) return '<br>';
+    if (lower.startsWith('<strong')) return match;
+    if (lower.startsWith('<em')) return match;
+    if (lower.startsWith('<b')) return match;
+    if (lower.startsWith('<i')) return match;
+    if (lower.startsWith('<a ')) {
+      const hrefMatch = match.match(/href="([^"]*)"/i);
+      const url = hrefMatch ? hrefMatch[1] : '#';
+      return `<a href="${sanitizeHtml(url)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">`;
+    }
+    if (lower.startsWith('<span')) {
+      const colorMatch = match.match(/style="color:([^"]*)"/i);
+      const color = colorMatch ? colorMatch[1] : 'inherit';
+      return `<span style="color:${sanitizeHtml(color)}">`;
+    }
+    return '';
+  });
 }
 
 function renderProjects(data) {
@@ -49,6 +141,7 @@ function renderProjects(data) {
       
     const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
     const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
+    const subtitleHtml = renderSafeHtml(project.subtitle);
       
     html += `
       <div class="project-card reveal ${delayClass} ${topTierClass}" data-id="${project.id}">
@@ -56,7 +149,7 @@ function renderProjects(data) {
         ${badgeHtml}
         <div class="project-info">
           <h3 class="project-title">${project.title}</h3>
-          <div class="project-subtitle">${project.subtitle}</div>
+          <div class="project-subtitle">${subtitleHtml}</div>
         </div>
       </div>
     `;
@@ -77,17 +170,8 @@ function initProjectSearch() {
   input.addEventListener('input', () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      const query = input.value.trim().toLowerCase();
-      if (!query) {
-        renderProjects(projectsData);
-        return;
-      }
-      const filtered = projectsData.filter(p =>
-        (p.title && p.title.toLowerCase().includes(query)) ||
-        (p.subtitle && p.subtitle.toLowerCase().includes(query)) ||
-        (p.detail && p.detail.toLowerCase().includes(query))
-      );
-      renderProjects(filtered);
+      searchQuery = input.value.trim();
+      applyFilters();
     }, 200);
   });
 }
@@ -119,11 +203,11 @@ function openProjectDetails(id) {
   
   // Populate details
   document.getElementById('overlayTitle').textContent = project.title;
-  document.getElementById('overlaySubtitle').textContent = project.subtitle;
+  document.getElementById('overlaySubtitle').innerHTML = renderSafeHtml(project.subtitle);
   
-  // Preserve line breaks in detail
+  // Render formatted detail
   const detailEl = document.getElementById('overlayDetail');
-  detailEl.innerHTML = project.detail ? project.detail.replace(/\n/g, '<br>') : '';
+  detailEl.innerHTML = project.detail ? renderSafeHtml(project.detail).replace(/\n/g, '<br>') : '';
   
   // Populate Gallery
   const gallery = document.getElementById('overlayGallery');

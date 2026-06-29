@@ -33,6 +33,7 @@
       <button class="admin-tab" data-target="projectsSection">Projects</button>
       <button class="admin-tab" data-target="achievementsSection">Achievements</button>
       <button class="admin-tab" data-target="experienceSection">Experience</button>
+      <button class="admin-tab" data-target="categoriesSection">Categories</button>
       <button class="admin-tab" data-target="settingsSection">Settings & Themes</button>
     </aside>
 
@@ -121,17 +122,36 @@
             
             <div class="form-group">
               <label class="form-label">Subtitle / Category</label>
+              <div class="fmt-toolbar" data-target="projectSubtitle">
+                <button type="button" class="fmt-btn" data-tag="bold" title="Bold"><strong>B</strong></button>
+                <button type="button" class="fmt-btn" data-tag="italic" title="Italic"><em>I</em></button>
+                <button type="button" class="fmt-btn" data-tag="link" title="Insert Link">🔗</button>
+                <button type="button" class="fmt-btn" data-tag="color" title="Text Color">🎨</button>
+                <button type="button" class="fmt-btn" data-tag="icon" title="Insert Icon">✨</button>
+              </div>
               <input type="text" id="projectSubtitle" class="form-input" required>
             </div>
             
             <div class="form-group">
               <label class="form-label">Detail</label>
+              <div class="fmt-toolbar" data-target="projectDetail">
+                <button type="button" class="fmt-btn" data-tag="bold" title="Bold"><strong>B</strong></button>
+                <button type="button" class="fmt-btn" data-tag="italic" title="Italic"><em>I</em></button>
+                <button type="button" class="fmt-btn" data-tag="link" title="Insert Link">🔗</button>
+                <button type="button" class="fmt-btn" data-tag="color" title="Text Color">🎨</button>
+                <button type="button" class="fmt-btn" data-tag="icon" title="Insert Icon">✨</button>
+              </div>
               <textarea id="projectDetail" class="form-textarea" rows="4" required></textarea>
             </div>
             
             <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
               <input type="checkbox" id="projectIsTopTier" style="width: 18px; height: 18px; accent-color: var(--accent);">
               <label class="form-label" style="margin-bottom: 0;">Is Top Tier Project (Shows at top with golden glow)</label>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label class="form-label">Category</label>
+              <select id="projectCategory" class="form-input"></select>
             </div>
             
             <div class="form-group">
@@ -262,6 +282,21 @@
               <button type="button" class="btn-secondary" id="btnCancelExperience2">Cancel</button>
             </div>
           </form>
+        </div>
+      </section>
+
+      <!-- ================= CATEGORIES SECTION ================= -->
+      <section class="admin-section" id="categoriesSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h2 class="admin-section-title" style="margin-bottom: 0;">Categories</h2>
+          <button class="btn-primary" id="btnAddNewCategory">+ Add Category</button>
+        </div>
+        <p class="admin-section-desc">Create categories to organize your projects on the Work page.</p>
+
+        <div id="categoriesListContainer">
+          <div class="admin-list" id="adminCategoriesList">
+            <!-- Populated via JS -->
+          </div>
         </div>
       </section>
 
