@@ -38,7 +38,9 @@ async function loadHomeData() {
     document.getElementById('heroName').textContent = profile.name;
     document.getElementById('footerName').textContent = profile.name;
     document.getElementById('heroTitle').textContent = profile.title;
-    document.getElementById('heroEmail').textContent = profile.email;
+    const heroEmail = document.getElementById('heroEmail');
+    heroEmail.textContent = profile.email;
+    heroEmail.href = `mailto:${profile.email}`;
     document.getElementById('heroBio').textContent = profile.bio;
     if (profile.photo) {
       document.getElementById('heroPhoto').src = profile.photo;

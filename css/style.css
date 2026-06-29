@@ -675,6 +675,12 @@ h1, h2, h3, h4, h5 {
   font-weight: 400;
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+.hero-email:hover {
+  color: var(--accent);
 }
 
 .hero-bio {
