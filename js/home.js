@@ -69,6 +69,7 @@ async function loadHomeData() {
   // Render Experience
   const expContainer = document.getElementById('experienceContainer');
   if (expContainer) {
+    experience.sort((a, b) => parseInt(b.year) - parseInt(a.year));
     let html = '';
     experience.forEach((exp, index) => {
       const delayClass = `reveal-delay-${(index % 3) + 1}`;
