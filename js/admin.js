@@ -296,11 +296,18 @@ function initProjectForm() {
     const id = document.getElementById('projectId').value || Date.now().toString();
     const isNew = !document.getElementById('projectId').value;
     
+    const subtitleEl = document.getElementById('projectSubtitle');
+    const detailEl = document.getElementById('projectDetail');
+    const subtitleHtml = subtitleEl.innerHTML.replace(/<br>/g, '').trim();
+    const detailHtml = detailEl.innerHTML.replace(/<br>/g, '').trim();
+    if (!subtitleHtml) { alert('Subtitle is required.'); subtitleEl.focus(); return; }
+    if (!detailHtml) { alert('Detail is required.'); detailEl.focus(); return; }
+
     const project = {
       id: id,
       title: document.getElementById('projectTitle').value,
-      subtitle: document.getElementById('projectSubtitle').value,
-      detail: document.getElementById('projectDetail').value,
+      subtitle: subtitleEl.innerHTML,
+      detail: detailEl.innerHTML,
       isTopTier: document.getElementById('projectIsTopTier').checked,
       images: currentProjectImages,
       category: document.getElementById('projectCategory').value || 'Default'
@@ -372,13 +379,15 @@ function openProjectForm(project = null) {
   
   const form = document.getElementById('projectForm');
   form.reset();
+  document.getElementById('projectSubtitle').innerHTML = '';
+  document.getElementById('projectDetail').innerHTML = '';
   
   if (project) {
     document.getElementById('projectFormTitle').textContent = 'Edit Project';
     document.getElementById('projectId').value = project.id;
     document.getElementById('projectTitle').value = project.title;
-    document.getElementById('projectSubtitle').value = project.subtitle;
-    document.getElementById('projectDetail').value = project.detail;
+    document.getElementById('projectSubtitle').innerHTML = project.subtitle || '';
+    document.getElementById('projectDetail').innerHTML = project.detail || '';
     document.getElementById('projectIsTopTier').checked = !!project.isTopTier;
     currentProjectImages = [...(project.images || [])];
     populateCategoryDropdown(project.category || 'Default');
@@ -697,59 +706,42 @@ window.deleteExperience = async function(idx) {
 }
 
 /* ================= FORMATTING TOOLBAR ================= */
-function initFormatToolbar(textareaId) {
-  const ta = document.getElementById(textareaId);
-  if (!ta) return;
+function initFormatToolbar(editorId) {
+  const editor = document.getElementById(editorId);
+  if (!editor) return;
 
-  document.querySelectorAll(`.fmt-toolbar[data-target="${textareaId}"] .fmt-btn`).forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tag = btn.getAttribute('data-tag');
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const val = ta.value;
-      const before = val.substring(0, start);
-      const selected = val.substring(start, end);
-      const after = val.substring(end);
+  const toolbar = editor.parentElement.querySelector('.fmt-toolbar');
+  if (!toolbar) return;
 
-      let insert;
-      switch (tag) {
+  toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const cmd = btn.getAttribute('data-cmd');
+      editor.focus();
+
+      switch (cmd) {
         case 'bold':
-          insert = `<strong>${selected}</strong>`;
+          document.execCommand('bold');
           break;
         case 'italic':
-          insert = `<em>${selected}</em>`;
+          document.execCommand('italic');
           break;
         case 'link': {
           const url = prompt('Enter URL:', 'https://');
-          if (!url) return;
-          insert = selected
-            ? `<a href="${url}" target="_blank">${selected}</a>`
-            : `<a href="${url}" target="_blank">${url}</a>`;
+          if (url) document.execCommand('createLink', false, url);
           break;
         }
         case 'color': {
           const color = prompt('Enter color (hex, name):', '#c8a951');
-          if (!color) return;
-          insert = selected
-            ? `<span style="color:${color}">${selected}</span>`
-            : `<span style="color:${color}">text</span>`;
+          if (color) document.execCommand('foreColor', false, color);
           break;
         }
         case 'icon': {
           const icon = prompt('Enter emoji or icon:', '✨');
-          if (!icon) return;
-          insert = before.trim() && !before.endsWith('\n') ? icon : icon;
+          if (icon) document.execCommand('insertHTML', false, icon);
           break;
         }
-        default:
-          return;
       }
-
-      ta.focus();
-      ta.value = before + insert + after;
-      const pos = before.length + insert.length;
-      ta.setSelectionRange(pos, pos);
-      ta.dispatchEvent(new Event('input'));
     });
   });
 }
