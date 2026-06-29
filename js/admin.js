@@ -19,7 +19,7 @@ function compressImage(file, callback) {
       const canvas = document.createElement('canvas');
       let width = img.width;
       let height = img.height;
-      const MAX_SIZE = 1000;
+      const MAX_SIZE = 500;
       
       if (width > height) {
         if (width > MAX_SIZE) {
@@ -37,7 +37,7 @@ function compressImage(file, callback) {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-      callback(canvas.toDataURL('image/jpeg', 0.6)); // 60% quality JPEG
+      callback(canvas.toDataURL('image/jpeg', 0.4)); // 40% quality JPEG
     };
     img.src = event.target.result;
   };
