@@ -8,21 +8,6 @@
 </head>
 <body class="dark">
 
-  <!-- Cursor Elements -->
-  <div class="cursor-dot" id="cursorDot"></div>
-  <div id="cursorTrails"></div>
-
-  <!-- Page Transition Overlay -->
-  <div class="page-transition" id="pageTransition"></div>
-
-  <!-- Preloader -->
-  <div class="preloader" id="preloader">
-    <div class="preloader-logo">Poetfolio</div>
-    <div class="preloader-bar">
-      <div class="preloader-bar-fill"></div>
-    </div>
-  </div>
-
   <!-- Navigation -->
   <nav class="nav-bar">
     <div class="nav-left">
@@ -64,7 +49,7 @@
           <div class="contact-card-icon">✉</div>
           <div class="contact-card-label">Email</div>
           <div class="contact-card-value">
-            <a href="#" id="contactEmail" class="skeleton">Loading...</a>
+            <a href="#" id="contactEmail">Loading...</a>
           </div>
         </div>
         <div class="contact-card">
@@ -84,9 +69,6 @@
         <h2 class="section-title reveal">Achievements & Certificates</h2>
         
         <div class="achievements-grid" id="achievementsGrid">
-          <div class="skeleton" style="aspect-ratio: 16/10; height: auto; border-radius: 0;"></div>
-          <div class="skeleton" style="aspect-ratio: 16/10; height: auto; border-radius: 0;"></div>
-          <div class="skeleton" style="aspect-ratio: 16/10; height: auto; border-radius: 0;"></div>
           <!-- Achievements populated via JS -->
           <div class="empty-state reveal reveal-delay-2" id="achievementsEmpty" style="display: none;">
             <div class="empty-icon">🏆</div>

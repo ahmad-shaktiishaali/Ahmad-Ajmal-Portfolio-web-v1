@@ -13,10 +13,7 @@ function loadContactInfo() {
         const emailEl = document.getElementById('contactEmail');
         const emailBtn = document.getElementById('emailBtn');
         
-        if (emailEl) {
-          emailEl.textContent = profile.email;
-          emailEl.classList.remove('skeleton');
-        }
+        if (emailEl) emailEl.textContent = profile.email;
         if (emailEl) emailEl.href = `mailto:${profile.email}`;
         if (emailBtn) emailBtn.href = `mailto:${profile.email}`;
       }
@@ -24,7 +21,6 @@ function loadContactInfo() {
       console.error("Error parsing profile data for contact", e);
     }
   }
-  hidePreloader();
 }
 
 function loadAchievements() {

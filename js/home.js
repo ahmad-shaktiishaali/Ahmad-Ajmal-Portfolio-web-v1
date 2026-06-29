@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   loadHomeData();
+  
+  // Set current year in footer
   document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
@@ -33,25 +35,14 @@ async function loadHomeData() {
 
   // Render Profile
   try {
-    const heroName = document.getElementById('heroName');
-    heroName.textContent = profile.name;
-    heroName.classList.remove('skeleton');
-    const footerName = document.getElementById('footerName');
-    footerName.textContent = profile.name;
-    const heroTitle = document.getElementById('heroTitle');
-    heroTitle.textContent = profile.title;
-    heroTitle.classList.remove('skeleton');
-    const heroEmail = document.getElementById('heroEmail');
-    heroEmail.textContent = profile.email;
-    heroEmail.classList.remove('skeleton');
-    const heroBio = document.getElementById('heroBio');
-    heroBio.textContent = profile.bio;
-    heroBio.classList.remove('skeleton');
+    document.getElementById('heroName').textContent = profile.name;
+    document.getElementById('footerName').textContent = profile.name;
+    document.getElementById('heroTitle').textContent = profile.title;
+    document.getElementById('heroEmail').textContent = profile.email;
+    document.getElementById('heroBio').textContent = profile.bio;
     if (profile.photo) {
       document.getElementById('heroPhoto').src = profile.photo;
     }
-    // Hide preloader once profile loads
-    hidePreloader();
   } catch (e) { console.error(e); }
 
   // Render Skills

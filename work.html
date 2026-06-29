@@ -8,21 +8,6 @@
 </head>
 <body class="dark">
 
-  <!-- Cursor Elements -->
-  <div class="cursor-dot" id="cursorDot"></div>
-  <div id="cursorTrails"></div>
-
-  <!-- Page Transition Overlay -->
-  <div class="page-transition" id="pageTransition"></div>
-
-  <!-- Preloader -->
-  <div class="preloader" id="preloader">
-    <div class="preloader-logo">Poetfolio</div>
-    <div class="preloader-bar">
-      <div class="preloader-bar-fill"></div>
-    </div>
-  </div>
-
   <!-- Navigation -->
   <nav class="nav-bar">
     <div class="nav-left">
@@ -60,24 +45,7 @@
         <h1 class="section-title reveal">Selected Works</h1>
         <p class="section-subtitle reveal">A curated collection of my recent projects, showcasing design thinking and technical execution.</p>
         
-        <!-- Search / Filter -->
-        <div class="search-bar reveal reveal-delay-1">
-          <span class="search-icon">🔍</span>
-          <input type="text" class="search-input" id="projectSearch" placeholder="Search projects..." autocomplete="off">
-          <button class="search-clear" id="searchClear">✕</button>
-        </div>
-        
         <div class="projects-grid" id="projectsGrid">
-          <!-- Skeleton loading cards -->
-          <div class="project-card skeleton" style="border: none; cursor: default; pointer-events: none;">
-            <div class="skeleton" style="position: absolute; inset: 0;"></div>
-          </div>
-          <div class="project-card skeleton" style="border: none; cursor: default; pointer-events: none;">
-            <div class="skeleton" style="position: absolute; inset: 0;"></div>
-          </div>
-          <div class="project-card skeleton" style="border: none; cursor: default; pointer-events: none;">
-            <div class="skeleton" style="position: absolute; inset: 0;"></div>
-          </div>
           <!-- Projects populated via JS -->
           <div class="empty-state reveal reveal-delay-2" id="projectsEmpty" style="display: none;">
             <div class="empty-icon">📁</div>
