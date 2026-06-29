@@ -110,9 +110,27 @@
             <span class="game-score-label">Taps</span>
             <span class="game-score-value" id="gameScore">0</span>
           </div>
+          <div class="game-highscore">
+            <span class="game-hs-label">Record</span>
+            <span class="game-hs-value" id="gameHighScore">100</span>
+            <span class="game-hs-holder" id="gameHolder">by Ahmad Ajmal</span>
+          </div>
           <div class="game-message" id="gameMessage"></div>
         </div>
       </section>
+
+      <!-- Record Beat Modal -->
+      <div class="modal-overlay" id="recordModal">
+        <div class="modal-box">
+          <h3 class="modal-title">🏆 Khatarnaak!</h3>
+          <p style="color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.9rem;">You beat the record! Type your name, legend.</p>
+          <form id="recordForm">
+            <input type="text" id="recordNameInput" class="form-input" placeholder="Your name..." maxlength="20" required>
+            <div class="password-error" id="recordError"></div>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem;">Claim the Crown ✨</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 

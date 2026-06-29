@@ -855,6 +855,37 @@ function initSettingsForm() {
       alert("Error saving theme: " + err.message);
     }
   });
+
+  // Load game record display
+  if (db) {
+    db.collection('portfolio').doc('game').get().then(doc => {
+      if (doc.exists) {
+        const d = doc.data();
+        document.getElementById('adminGameRecord').textContent = d.highScore || 100;
+        document.getElementById('adminGameHolder').textContent = d.holderName || 'Ahmad Ajmal';
+      }
+    }).catch(() => {});
+  }
+
+  const resetBtn = document.getElementById('btnResetGame');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', async () => {
+      if (!confirm('Reset high score to 100 by Ahmad Ajmal?')) return;
+      try {
+        showLoading();
+        if (db) {
+          await db.collection('portfolio').doc('game').set({ highScore: 100, holderName: 'Ahmad Ajmal' });
+          document.getElementById('adminGameRecord').textContent = '100';
+          document.getElementById('adminGameHolder').textContent = 'Ahmad Ajmal';
+        }
+        hideLoading();
+        showToast('High score reset!');
+      } catch (err) {
+        hideLoading();
+        alert("Error: " + err.message);
+      }
+    });
+  }
 }
 
 function updateActiveThemeBtn(theme) {

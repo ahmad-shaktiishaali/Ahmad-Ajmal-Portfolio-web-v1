@@ -90,10 +90,85 @@ function initGoldenTap() {
   const orb = document.getElementById('goldenOrb');
   const scoreEl = document.getElementById('gameScore');
   const msgEl = document.getElementById('gameMessage');
+  const hsValue = document.getElementById('gameHighScore');
+  const hsHolder = document.getElementById('gameHolder');
+  const recordModal = document.getElementById('recordModal');
+  const recordForm = document.getElementById('recordForm');
+  const recordInput = document.getElementById('recordNameInput');
+  const recordError = document.getElementById('recordError');
   if (!orb) return;
 
   let score = parseInt(localStorage.getItem('poetfolio_taps') || '0', 10);
+  let highScore = 100;
+  let holderName = 'Ahmad Ajmal';
+
+  async function loadGameData() {
+    if (!db) return;
+    try {
+      const doc = await db.collection('portfolio').doc('game').get();
+      if (doc.exists) {
+        highScore = doc.data().highScore || 100;
+        holderName = doc.data().holderName || 'Ahmad Ajmal';
+      } else {
+        await db.collection('portfolio').doc('game').set({ highScore: 100, holderName: 'Ahmad Ajmal' });
+      }
+    } catch (e) {
+      console.error("Game data error:", e);
+    }
+    updateHighScoreDisplay();
+    checkRecordBeat();
+  }
+
+  function updateHighScoreDisplay() {
+    if (hsValue) hsValue.textContent = highScore;
+    if (hsHolder) hsHolder.textContent = `by ${holderName}`;
+  }
+
+  function checkRecordBeat() {
+    if (score > highScore) {
+      setTimeout(() => {
+        if (recordModal) recordModal.classList.add('active');
+        if (recordInput) { recordInput.value = ''; setTimeout(() => recordInput.focus(), 100); }
+        if (recordError) recordError.textContent = '';
+      }, 600);
+    }
+  }
+
+  loadGameData();
   scoreEl.textContent = score;
+
+  if (recordForm) {
+    recordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = recordInput.value.trim();
+      if (!name) { recordError.textContent = 'Enter your name, legend!'; return; }
+
+      showToast(`👑 ${name} is the new champion!`, 'success');
+      if (recordModal) recordModal.classList.remove('active');
+
+      holderName = name;
+      highScore = score;
+      updateHighScoreDisplay();
+
+      if (db) {
+        try {
+          await db.collection('portfolio').doc('game').set({ highScore, holderName });
+        } catch (err) {
+          console.error("Failed to save record:", err);
+        }
+      }
+    });
+
+    recordModal.addEventListener('click', (e) => {
+      if (e.target === recordModal) recordModal.classList.remove('active');
+    });
+  }
+
+  if (recordInput) {
+    recordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && recordModal) recordModal.classList.remove('active');
+    });
+  }
 
   const messages = [
     '✨ Radiant!', '💫 Stellar!', '🌟 Glowing!', '⚡ Brilliant!',
@@ -130,6 +205,8 @@ function initGoldenTap() {
         setTimeout(() => spawnSparkle(cx, cy), i * 20);
       }
     }
+
+    checkRecordBeat();
   }
 
   orb.addEventListener('click', handleTap);
