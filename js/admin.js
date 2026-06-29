@@ -19,7 +19,7 @@ function compressImage(file, callback) {
       const canvas = document.createElement('canvas');
       let width = img.width;
       let height = img.height;
-      const MAX_SIZE = 500;
+      const MAX_SIZE = 1000;
       
       if (width > height) {
         if (width > MAX_SIZE) {
@@ -37,7 +37,7 @@ function compressImage(file, callback) {
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
-      callback(canvas.toDataURL('image/jpeg', 0.4)); // 40% quality JPEG
+      callback(canvas.toDataURL('image/jpeg', 0.6)); // 60% quality JPEG
     };
     img.src = event.target.result;
   };
@@ -855,37 +855,6 @@ function initSettingsForm() {
       alert("Error saving theme: " + err.message);
     }
   });
-
-  // Load game record display
-  if (db) {
-    db.collection('portfolio').doc('game').get().then(doc => {
-      if (doc.exists) {
-        const d = doc.data();
-        document.getElementById('adminGameRecord').textContent = d.highScore || 100;
-        document.getElementById('adminGameHolder').textContent = d.holderName || 'Ahmad Ajmal';
-      }
-    }).catch(() => {});
-  }
-
-  const resetBtn = document.getElementById('btnResetGame');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', async () => {
-      if (!confirm('Reset high score to 100 by Ahmad Ajmal?')) return;
-      try {
-        showLoading();
-        if (db) {
-          await db.collection('portfolio').doc('game').set({ highScore: 100, holderName: 'Ahmad Ajmal' });
-          document.getElementById('adminGameRecord').textContent = '100';
-          document.getElementById('adminGameHolder').textContent = 'Ahmad Ajmal';
-        }
-        hideLoading();
-        showToast('High score reset!');
-      } catch (err) {
-        hideLoading();
-        alert("Error: " + err.message);
-      }
-    });
-  }
 }
 
 function updateActiveThemeBtn(theme) {

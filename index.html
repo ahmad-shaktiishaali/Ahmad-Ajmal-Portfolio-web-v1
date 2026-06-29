@@ -94,43 +94,17 @@
         </div>
       </section>
 
-      <!-- Interactive Section -->
-      <section class="section" id="interactive">
+      <!-- Golden Touch Section -->
+      <section class="section" id="goldenTouch">
         <span class="section-label reveal">Play</span>
-        <h2 class="section-title reveal">Golden Tap</h2>
-        <p class="section-subtitle reveal">Tap the orb. Feel the glow. Watch the count rise.</p>
+        <h2 class="section-title reveal">Golden Touch</h2>
+        <p class="section-subtitle reveal">Tap anywhere to collect gold. Every touch counts.</p>
         
-        <div class="game-container reveal reveal-delay-2" id="gameContainer">
-          <div class="golden-orb" id="goldenOrb">
-            <div class="orb-glow"></div>
-            <div class="orb-shine"></div>
-            <div class="orb-inner">✦</div>
-          </div>
-          <div class="game-score">
-            <span class="game-score-label">Taps</span>
-            <span class="game-score-value" id="gameScore">0</span>
-          </div>
-          <div class="game-highscore">
-            <span class="game-hs-label">Record</span>
-            <span class="game-hs-value" id="gameHighScore">100</span>
-            <span class="game-hs-holder" id="gameHolder">by Ahmad Ajmal</span>
-          </div>
-          <div class="game-message" id="gameMessage"></div>
+        <div class="golden-zone reveal reveal-delay-2" id="goldenZone">
+          <div class="golden-counter" id="goldCounter">0</div>
+          <div class="golden-label"><span id="goldUnit">gold</span> collected</div>
         </div>
       </section>
-
-      <!-- Record Beat Modal -->
-      <div class="modal-overlay" id="recordModal">
-        <div class="modal-box">
-          <h3 class="modal-title">🏆 Khatarnaak!</h3>
-          <p style="color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.9rem;">You beat the record! Type your name, legend.</p>
-          <form id="recordForm">
-            <input type="text" id="recordNameInput" class="form-input" placeholder="Your name..." maxlength="20" required>
-            <div class="password-error" id="recordError"></div>
-            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;margin-top:1rem;">Claim the Crown ✨</button>
-          </form>
-        </div>
-      </div>
     </div>
   </div>
 

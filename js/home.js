@@ -24,6 +24,7 @@ async function loadHomeData() {
       const expDoc = await db.collection('portfolio').doc('experience').get();
       if (expDoc.exists && expDoc.data().items) experience = expDoc.data().items;
     } catch (e) { console.error("Firebase exp error:", e); }
+
   }
 
   // Render Profile
@@ -80,139 +81,52 @@ async function loadHomeData() {
     expContainer.innerHTML = html;
   }
 
-  // Init Golden Tap
-  initGoldenTap();
+  // Golden Touch Interactive
+  initGoldenTouch();
   
   setTimeout(initScrollReveal, 100);
 }
 
-function initGoldenTap() {
-  const orb = document.getElementById('goldenOrb');
-  const scoreEl = document.getElementById('gameScore');
-  const msgEl = document.getElementById('gameMessage');
-  const hsValue = document.getElementById('gameHighScore');
-  const hsHolder = document.getElementById('gameHolder');
-  const recordModal = document.getElementById('recordModal');
-  const recordForm = document.getElementById('recordForm');
-  const recordInput = document.getElementById('recordNameInput');
-  const recordError = document.getElementById('recordError');
-  if (!orb) return;
+function initGoldenTouch() {
+  const zone = document.getElementById('goldenZone');
+  const counter = document.getElementById('goldCounter');
+  if (!zone || !counter) return;
 
-  let score = parseInt(localStorage.getItem('poetfolio_taps') || '0', 10);
-  let highScore = 100;
-  let holderName = 'Ahmad Ajmal';
-
-  async function loadGameData() {
-    if (!db) return;
-    try {
-      const doc = await db.collection('portfolio').doc('game').get();
-      if (doc.exists) {
-        highScore = doc.data().highScore || 100;
-        holderName = doc.data().holderName || 'Ahmad Ajmal';
-      } else {
-        await db.collection('portfolio').doc('game').set({ highScore: 100, holderName: 'Ahmad Ajmal' });
-      }
-    } catch (e) {
-      console.error("Game data error:", e);
-    }
-    updateHighScoreDisplay();
-    checkRecordBeat();
-  }
-
-  function updateHighScoreDisplay() {
-    if (hsValue) hsValue.textContent = highScore;
-    if (hsHolder) hsHolder.textContent = `by ${holderName}`;
-  }
-
-  function checkRecordBeat() {
-    if (score > highScore) {
-      setTimeout(() => {
-        if (recordModal) recordModal.classList.add('active');
-        if (recordInput) { recordInput.value = ''; setTimeout(() => recordInput.focus(), 100); }
-        if (recordError) recordError.textContent = '';
-      }, 600);
-    }
-  }
-
-  loadGameData();
-  scoreEl.textContent = score;
-
-  if (recordForm) {
-    recordForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = recordInput.value.trim();
-      if (!name) { recordError.textContent = 'Enter your name, legend!'; return; }
-
-      showToast(`👑 ${name} is the new champion!`, 'success');
-      if (recordModal) recordModal.classList.remove('active');
-
-      holderName = name;
-      highScore = score;
-      updateHighScoreDisplay();
-
-      if (db) {
-        try {
-          await db.collection('portfolio').doc('game').set({ highScore, holderName });
-        } catch (err) {
-          console.error("Failed to save record:", err);
-        }
-      }
-    });
-
-    recordModal.addEventListener('click', (e) => {
-      if (e.target === recordModal) recordModal.classList.remove('active');
-    });
-  }
-
-  if (recordInput) {
-    recordInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && recordModal) recordModal.classList.remove('active');
-    });
-  }
-
-  const messages = [
-    '✨ Radiant!', '💫 Stellar!', '🌟 Glowing!', '⚡ Brilliant!',
-    '🔥 On fire!', '💎 Precious!', '🌙 Lunar!', '☀️ Golden!',
-    '🎯 On point!', '🌈 Magical!', '⭐ Legendary!', '👑 Royal!',
-    '🌀 Hypnotic!', '✨ Dazzling!', '🌊 Flowing!', '🎆 Sparkling!'
-  ];
+  let count = 0;
 
   function handleTap(e) {
-    e.preventDefault();
-    score++;
-    localStorage.setItem('poetfolio_taps', score);
+    const rect = zone.getBoundingClientRect();
+    const x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
+    const y = (e.clientY || e.touches?.[0]?.clientY || 0) - rect.top;
 
-    orb.classList.remove('orb-bounce');
-    void orb.offsetWidth;
-    orb.classList.add('orb-bounce');
+    count++;
+    counter.textContent = count;
+    counter.style.transform = 'scale(1.3)';
+    setTimeout(() => { counter.style.transform = 'scale(1)'; }, 200);
 
-    scoreEl.classList.remove('pop');
-    void scoreEl.offsetWidth;
-    scoreEl.classList.add('pop');
-    scoreEl.textContent = score;
+    // Ripple
+    const ripple = document.createElement('div');
+    ripple.className = 'golden-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    zone.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
 
-    const msg = messages[Math.floor(Math.random() * messages.length)];
-    msgEl.textContent = msg;
-    msgEl.classList.remove('fade');
-    void msgEl.offsetWidth;
-    msgEl.classList.add('fade');
-
-    if (typeof spawnSparkle === 'function') {
-      const rect = orb.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      for (let i = 0; i < 18; i++) {
-        setTimeout(() => spawnSparkle(cx, cy), i * 20);
-      }
+    // Particles
+    for (let i = 0; i < 6; i++) {
+      const p = document.createElement('div');
+      p.className = 'golden-particle';
+      const angle = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.5;
+      const dist = 40 + Math.random() * 50;
+      p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      zone.appendChild(p);
+      p.addEventListener('animationend', () => p.remove());
     }
-
-    checkRecordBeat();
   }
 
-  orb.addEventListener('click', handleTap);
-  orb.addEventListener('touchstart', (e) => {
-    if (!e.cancelable) return;
-    e.preventDefault();
-    handleTap(e);
-  }, { passive: false });
+  zone.addEventListener('click', handleTap);
+  zone.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); }, { passive: false });
 }
