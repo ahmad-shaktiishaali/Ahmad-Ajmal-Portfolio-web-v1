@@ -4,17 +4,13 @@ let projectsData = [];
 document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
   initProjectOverlay();
+  initProjectSearch();
   document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
 async function loadProjects() {
-  if (!db) return; // Wait for Firebase
+  if (!db) return;
   
-  const grid = document.getElementById('projectsGrid');
-  const emptyState = document.getElementById('projectsEmpty');
-  
-  if (!grid) return;
-
   try {
     const projectsDoc = await db.collection('portfolio').doc('projects').get();
     if (projectsDoc.exists && projectsDoc.data().items) {
@@ -23,48 +19,77 @@ async function loadProjects() {
       projectsData = [];
     }
     
-    if (projectsData.length === 0) {
-      if (emptyState) emptyState.style.display = 'block';
-      return;
-    }
-    
-    // Sort projects: Top Tier first
     projectsData.sort((a, b) => (b.isTopTier ? 1 : 0) - (a.isTopTier ? 1 : 0));
-    
-    let html = '';
-    
-    projectsData.forEach((project, index) => {
-      const delayClass = `reveal-delay-${(index % 3) + 1}`;
-      const coverImg = (project.images && project.images.length > 0) 
-        ? project.images[0] 
-        : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
-        
-      const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
-      const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
-        
-      html += `
-        <div class="project-card reveal ${delayClass} ${topTierClass}" data-id="${project.id}">
-          <img src="${coverImg}" alt="${project.title}" class="project-cover">
-          ${badgeHtml}
-          <div class="project-info">
-            <h3 class="project-title">${project.title}</h3>
-            <div class="project-subtitle">${project.subtitle}</div>
-          </div>
-        </div>
-      `;
-    });
-    
-    grid.innerHTML = html;
-    
-    // Re-initialize scroll reveal for new items
-    if (typeof initScrollReveal === 'function') {
-      setTimeout(initScrollReveal, 100);
-    }
+    renderProjects(projectsData);
     
   } catch (e) {
     console.error("Error loading projects from Firebase", e);
-    if (emptyState) emptyState.style.display = 'block';
+    renderProjects([]);
   }
+}
+
+function renderProjects(data) {
+  const grid = document.getElementById('projectsGrid');
+  const emptyState = document.getElementById('projectsEmpty');
+  if (!grid) return;
+  
+  if (data.length === 0) {
+    grid.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'block';
+    return;
+  }
+  if (emptyState) emptyState.style.display = 'none';
+  
+  let html = '';
+  data.forEach((project, index) => {
+    const delayClass = `reveal-delay-${(index % 3) + 1}`;
+    const coverImg = (project.images && project.images.length > 0) 
+      ? project.images[0] 
+      : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
+      
+    const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
+    const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
+      
+    html += `
+      <div class="project-card reveal ${delayClass} ${topTierClass}" data-id="${project.id}">
+        <img src="${coverImg}" alt="${project.title}" class="project-cover">
+        ${badgeHtml}
+        <div class="project-info">
+          <h3 class="project-title">${project.title}</h3>
+          <div class="project-subtitle">${project.subtitle}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  grid.innerHTML = html;
+  
+  if (typeof initScrollReveal === 'function') {
+    setTimeout(initScrollReveal, 100);
+  }
+}
+
+function initProjectSearch() {
+  const input = document.getElementById('projectSearch');
+  if (!input) return;
+  
+  let debounceTimer;
+  input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const query = input.value.trim().toLowerCase();
+      if (!query) {
+        renderProjects(projectsData);
+        return;
+      }
+      const filtered = projectsData.filter(p =>
+        (p.title && p.title.toLowerCase().includes(query)) ||
+        (p.subtitle && p.subtitle.toLowerCase().includes(query)) ||
+        (p.detail && p.detail.toLowerCase().includes(query))
+      );
+      renderProjects(filtered);
+    }, 200);
+  });
 }
 
 function initProjectOverlay() {

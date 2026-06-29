@@ -204,6 +204,57 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// Click Sparkle Effect
+function initClickSparkles() {
+  document.addEventListener('click', (e) => {
+    const count = 10 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < count; i++) {
+      spawnSparkle(e.clientX, e.clientY);
+    }
+  });
+}
+
+function spawnSparkle(x, y) {
+  const el = document.createElement('div');
+  const size = 4 + Math.random() * 8;
+  const angle = Math.random() * Math.PI * 2;
+  const velocity = 60 + Math.random() * 120;
+  const dx = Math.cos(angle) * velocity;
+  const dy = Math.sin(angle) * velocity;
+  const drift = (Math.random() - 0.5) * 20;
+  const life = 400 + Math.random() * 600;
+
+  el.style.cssText = `
+    position: fixed; pointer-events: none; z-index: 99999; left: ${x}px; top: ${y}px;
+    width: ${size}px; height: ${size}px; border-radius: 50%;
+    background: radial-gradient(circle, #fff8e0, ${Math.random() > 0.5 ? '#c8a951' : '#dbb95e'});
+    box-shadow: 0 0 ${6 + Math.random() * 8}px rgba(200,169,81,0.8), 0 0 ${20 + Math.random() * 20}px rgba(200,169,81,0.3);
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+  `;
+
+  document.body.appendChild(el);
+
+  const start = performance.now();
+
+  function animate(now) {
+    const t = (now - start) / life;
+    if (t >= 1) { el.remove(); return; }
+
+    const eased = 1 - Math.pow(1 - t, 3);
+    const cx = dx * eased + drift * Math.sin(t * Math.PI * 3);
+    const cy = dy * eased - 60 * eased * eased;
+    const scale = 1 - t * 0.6;
+    const opacity = 1 - eased;
+
+    el.style.transform = `translate(calc(-50% + ${cx}px), calc(-50% + ${cy}px)) scale(${scale})`;
+    el.style.opacity = opacity;
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
 // Initialize everything on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   initStorage();
@@ -212,4 +263,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initNav();
   // Small delay for scroll reveal to ensure layout is ready
   setTimeout(initScrollReveal, 100);
+  initClickSparkles();
 });

@@ -2,6 +2,7 @@
 let profileData = {};
 let projectsData = [];
 let achievementsData = [];
+let experienceData = [];
 
 // Working state for images
 let currentProjectImages = [];
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initProfileForm();
   initProjectForm();
   initAchievementForm();
+  initExperienceForm();
   initSettingsForm();
 });
 
@@ -82,6 +84,8 @@ async function loadAllData() {
     populateProfileForm();
     renderProjectsList();
     renderAchievementsList();
+    experienceData = DEFAULT_DATA.experience;
+    renderExperienceList();
     return;
   }
   
@@ -123,6 +127,19 @@ async function loadAllData() {
     achievementsData = DEFAULT_DATA.achievements;
   }
   renderAchievementsList();
+
+  try {
+    const expDoc = await db.collection('portfolio').doc('experience').get();
+    if (expDoc.exists) {
+      experienceData = expDoc.data().items || [];
+    } else {
+      experienceData = DEFAULT_DATA.experience;
+    }
+  } catch (err) {
+    console.error("Firebase experience error:", err);
+    experienceData = DEFAULT_DATA.experience;
+  }
+  renderExperienceList();
 }
 
 /* ================= PROFILE LOGIC ================= */
@@ -528,6 +545,121 @@ window.deleteAchievement = async function(id) {
       showToast('Achievement deleted', 'error');
     } catch(err) {
       alert("Error deleting achievement: " + err.message);
+    }
+  }
+}
+
+/* ================= EXPERIENCE LOGIC ================= */
+function renderExperienceList() {
+  const list = document.getElementById('adminExperienceList');
+
+  if (experienceData.length === 0) {
+    list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No experience entries found. Create one!</div>';
+    return;
+  }
+
+  let html = '';
+  experienceData.forEach((exp, idx) => {
+    html += `
+      <div class="admin-list-item">
+        <div class="admin-list-info">
+          <div class="admin-list-title">${exp.role}</div>
+          <div class="admin-list-sub">${exp.year}${exp.company ? ' &middot; ' + exp.company : ''}</div>
+        </div>
+        <div class="admin-item-actions">
+          <button class="btn-secondary" onclick="editExperience('${idx}')">Edit</button>
+          <button class="btn-danger" onclick="deleteExperience('${idx}')">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+}
+
+function initExperienceForm() {
+  const form = document.getElementById('experienceForm');
+
+  document.getElementById('btnAddNewExperience').addEventListener('click', () => {
+    openExperienceForm();
+  });
+
+  document.getElementById('btnCancelExperience').addEventListener('click', closeExperienceForm);
+  document.getElementById('btnCancelExperience2').addEventListener('click', closeExperienceForm);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById('experienceId').value;
+    const isNew = !id;
+
+    const entry = {
+      year: document.getElementById('experienceYear').value,
+      role: document.getElementById('experienceRole').value,
+      company: document.getElementById('experienceCompany').value,
+      desc: document.getElementById('experienceDetail').value
+    };
+
+    if (isNew) {
+      experienceData.push(entry);
+    } else {
+      experienceData[id] = entry;
+    }
+
+    try {
+      showLoading();
+      if (db) await db.collection('portfolio').doc('experience').set({ items: experienceData });
+      hideLoading();
+      showToast(isNew ? 'Experience added!' : 'Experience updated!');
+      renderExperienceList();
+      closeExperienceForm();
+    } catch (err) {
+      hideLoading();
+      alert("Error saving experience: " + err.message);
+    }
+  });
+}
+
+function openExperienceForm(entry = null, idx = null) {
+  document.getElementById('experienceListContainer').style.display = 'none';
+  document.getElementById('btnAddNewExperience').style.display = 'none';
+  document.getElementById('experienceFormContainer').style.display = 'block';
+
+  const form = document.getElementById('experienceForm');
+  form.reset();
+
+  if (entry) {
+    document.getElementById('experienceFormTitle').textContent = 'Edit Experience';
+    document.getElementById('experienceId').value = idx;
+    document.getElementById('experienceYear').value = entry.year || '';
+    document.getElementById('experienceRole').value = entry.role || '';
+    document.getElementById('experienceCompany').value = entry.company || '';
+    document.getElementById('experienceDetail').value = entry.desc || '';
+  } else {
+    document.getElementById('experienceFormTitle').textContent = 'Add New Experience';
+    document.getElementById('experienceId').value = '';
+  }
+}
+
+function closeExperienceForm() {
+  document.getElementById('experienceListContainer').style.display = 'block';
+  document.getElementById('btnAddNewExperience').style.display = 'block';
+  document.getElementById('experienceFormContainer').style.display = 'none';
+}
+
+window.editExperience = function(idx) {
+  const entry = experienceData[idx];
+  if (entry) openExperienceForm(entry, idx);
+}
+
+window.deleteExperience = async function(idx) {
+  if (confirm("Are you sure you want to delete this experience entry?")) {
+    experienceData.splice(idx, 1);
+    try {
+      if (db) await db.collection('portfolio').doc('experience').set({ items: experienceData });
+      renderExperienceList();
+      showToast('Experience deleted', 'error');
+    } catch (err) {
+      alert("Error deleting experience: " + err.message);
     }
   }
 }

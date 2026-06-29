@@ -32,6 +32,7 @@
       <button class="admin-tab active" data-target="profileSection">Profile</button>
       <button class="admin-tab" data-target="projectsSection">Projects</button>
       <button class="admin-tab" data-target="achievementsSection">Achievements</button>
+      <button class="admin-tab" data-target="experienceSection">Experience</button>
       <button class="admin-tab" data-target="settingsSection">Settings & Themes</button>
     </aside>
 
@@ -77,9 +78,9 @@
             <textarea id="profileBio" class="form-textarea" required></textarea>
           </div>
 
-          <!-- Dynamic Lists for Skills, Experience, Studios (Simplified for MVP Admin) -->
+          <!-- Skills and Studios are managed via JSON storage directly or built out fully in v2 -->
           <div style="margin-top: 2rem;">
-            <p class="form-label" style="color: var(--accent);">Note: Skills, Experience, and Studios can be managed via the JSON storage directly or built out fully in v2.</p>
+            <p class="form-label" style="color: var(--accent);">Note: Skills and Studios can be managed via the JSON storage directly or built out fully in v2.</p>
           </div>
 
           <div class="form-actions">
@@ -205,6 +206,60 @@
             <div class="form-actions">
               <button type="submit" class="btn-primary">Save & Publish</button>
               <button type="button" class="btn-secondary" id="btnCancelAchievement2">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= EXPERIENCE SECTION ================= -->
+      <section class="admin-section" id="experienceSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <h2 class="admin-section-title" style="margin-bottom: 0;">Experience</h2>
+          <button class="btn-primary" id="btnAddNewExperience">+ Add Experience</button>
+        </div>
+        <p class="admin-section-desc">Manage timeline entries displayed on the home page.</p>
+
+        <!-- List View -->
+        <div id="experienceListContainer">
+          <div class="admin-list" id="adminExperienceList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Edit/Add Form (Hidden by default) -->
+        <div id="experienceFormContainer" style="display: none; background: var(--bg-card); border: 1px solid var(--border); padding: 2rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+            <h3 id="experienceFormTitle">Add New Experience</h3>
+            <button class="btn-icon" id="btnCancelExperience">✕</button>
+          </div>
+          
+          <form id="experienceForm">
+            <input type="hidden" id="experienceId">
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Year</label>
+                <input type="text" id="experienceYear" class="form-input" placeholder="e.g. 2025" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Title / Role</label>
+                <input type="text" id="experienceRole" class="form-input" placeholder="e.g. Software Engineer" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Company / Organization</label>
+              <input type="text" id="experienceCompany" class="form-input" placeholder="e.g. Company Name">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Detail</label>
+              <textarea id="experienceDetail" class="form-textarea" rows="3" placeholder="Describe your role and achievements..."></textarea>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save & Publish</button>
+              <button type="button" class="btn-secondary" id="btnCancelExperience2">Cancel</button>
             </div>
           </form>
         </div>
