@@ -9,8 +9,6 @@ async function loadHomeData() {
   let profile = DEFAULT_DATA.profile;
   let skills = DEFAULT_DATA.skills;
   let experience = DEFAULT_DATA.experience;
-  let studios = DEFAULT_DATA.studios;
-
   if (db) {
     try {
       const profileDoc = await db.collection('portfolio').doc('profile').get();
@@ -26,11 +24,6 @@ async function loadHomeData() {
       const expDoc = await db.collection('portfolio').doc('experience').get();
       if (expDoc.exists && expDoc.data().items) experience = expDoc.data().items;
     } catch (e) { console.error("Firebase exp error:", e); }
-
-    try {
-      const studiosDoc = await db.collection('portfolio').doc('studios').get();
-      if (studiosDoc.exists && studiosDoc.data().items) studios = studiosDoc.data().items;
-    } catch (e) { console.error("Firebase studios error:", e); }
   }
 
   // Render Profile
@@ -87,15 +80,62 @@ async function loadHomeData() {
     expContainer.innerHTML = html;
   }
 
-  // Render Studios
-  const studiosContainer = document.getElementById('studiosContainer');
-  if (studiosContainer) {
-    let html = '';
-    studios.forEach((studio) => {
-      html += `<span class="studio-tag">${studio}</span>`;
-    });
-    studiosContainer.innerHTML = html;
-  }
+  // Init Golden Tap
+  initGoldenTap();
   
   setTimeout(initScrollReveal, 100);
+}
+
+function initGoldenTap() {
+  const orb = document.getElementById('goldenOrb');
+  const scoreEl = document.getElementById('gameScore');
+  const msgEl = document.getElementById('gameMessage');
+  if (!orb) return;
+
+  let score = parseInt(localStorage.getItem('poetfolio_taps') || '0', 10);
+  scoreEl.textContent = score;
+
+  const messages = [
+    '✨ Radiant!', '💫 Stellar!', '🌟 Glowing!', '⚡ Brilliant!',
+    '🔥 On fire!', '💎 Precious!', '🌙 Lunar!', '☀️ Golden!',
+    '🎯 On point!', '🌈 Magical!', '⭐ Legendary!', '👑 Royal!',
+    '🌀 Hypnotic!', '✨ Dazzling!', '🌊 Flowing!', '🎆 Sparkling!'
+  ];
+
+  function handleTap(e) {
+    e.preventDefault();
+    score++;
+    localStorage.setItem('poetfolio_taps', score);
+
+    orb.classList.remove('orb-bounce');
+    void orb.offsetWidth;
+    orb.classList.add('orb-bounce');
+
+    scoreEl.classList.remove('pop');
+    void scoreEl.offsetWidth;
+    scoreEl.classList.add('pop');
+    scoreEl.textContent = score;
+
+    const msg = messages[Math.floor(Math.random() * messages.length)];
+    msgEl.textContent = msg;
+    msgEl.classList.remove('fade');
+    void msgEl.offsetWidth;
+    msgEl.classList.add('fade');
+
+    if (typeof spawnSparkle === 'function') {
+      const rect = orb.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 18; i++) {
+        setTimeout(() => spawnSparkle(cx, cy), i * 20);
+      }
+    }
+  }
+
+  orb.addEventListener('click', handleTap);
+  orb.addEventListener('touchstart', (e) => {
+    if (!e.cancelable) return;
+    e.preventDefault();
+    handleTap(e);
+  }, { passive: false });
 }

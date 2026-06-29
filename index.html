@@ -94,14 +94,23 @@
         </div>
       </section>
 
-      <!-- Studios Section -->
-      <section class="section" id="studios">
-        <span class="section-label reveal">Collaborations</span>
-        <h2 class="section-title reveal">Studios</h2>
-        <p class="section-subtitle reveal">Places and teams I've had the pleasure of working with.</p>
+      <!-- Interactive Section -->
+      <section class="section" id="interactive">
+        <span class="section-label reveal">Play</span>
+        <h2 class="section-title reveal">Golden Tap</h2>
+        <p class="section-subtitle reveal">Tap the orb. Feel the glow. Watch the count rise.</p>
         
-        <div class="studios-list reveal reveal-delay-2" id="studiosContainer">
-          <!-- Studios populated via JS -->
+        <div class="game-container reveal reveal-delay-2" id="gameContainer">
+          <div class="golden-orb" id="goldenOrb">
+            <div class="orb-glow"></div>
+            <div class="orb-shine"></div>
+            <div class="orb-inner">✦</div>
+          </div>
+          <div class="game-score">
+            <span class="game-score-label">Taps</span>
+            <span class="game-score-value" id="gameScore">0</span>
+          </div>
+          <div class="game-message" id="gameMessage"></div>
         </div>
       </section>
     </div>

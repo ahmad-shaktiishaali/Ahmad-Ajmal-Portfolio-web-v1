@@ -24,7 +24,7 @@ const DEFAULT_DATA = {
     { year: "2023", role: "Remote game dev job", company: "Flux Craft Studios", desc: "" },
     { year: "2020", role: "Freelancing", company: "", desc: "Still Continued" }
   ],
-  studios: ["Design Lab", "Creative Tech", "Web Solutions", "Innovate Studios"],
+
   projects: [],
   achievements: []
 };
