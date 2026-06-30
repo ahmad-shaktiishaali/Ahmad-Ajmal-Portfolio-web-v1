@@ -1100,7 +1100,7 @@ h1, h2, h3, h4, h5 {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
@@ -1137,7 +1137,7 @@ h1, h2, h3, h4, h5 {
 /* ========== PROJECT GRID (Work Page) ========== */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   padding: 3rem 0;
 }
@@ -1175,17 +1175,23 @@ h1, h2, h3, h4, h5 {
   aspect-ratio: 1/1;
   border-radius: 18px;
   border-color: var(--border-accent);
+  max-width: 120px;
+  justify-self: center;
+}
+
+@media (max-width: 768px) {
+  .project-card-mobile { max-width: 90px; }
 }
 
 .project-card-mobile-portrait .project-cover {
   object-fit: contain;
-  padding: 1.5rem;
+  padding: 0.25rem;
   background: var(--bg-primary);
 }
 
 .project-card-mobile-landscape .project-cover {
   object-fit: contain;
-  padding: 1rem 2.5rem;
+  padding: 0.25rem 0.5rem;
   background: var(--bg-primary);
 }
 
@@ -1401,13 +1407,13 @@ h1, h2, h3, h4, h5 {
 }
 
 .overlay-gallery-portrait {
-  max-width: 240px;
+  max-width: 360px;
   margin: 0 auto;
   border-radius: 16px;
 }
 
 .overlay-gallery-landscape {
-  max-width: 420px;
+  max-width: 600px;
   margin: 0 auto;
   border-radius: 12px;
 }
@@ -2023,6 +2029,7 @@ h1, h2, h3, h4, h5 {
   .hero-photo-frame { width: 260px; height: 340px; }
   .projects-grid { grid-template-columns: repeat(2, 1fr); }
   .projects-loader-skeletons { grid-template-columns: repeat(2, 1fr); }
+  .project-skeleton:nth-child(3) { display: none; }
   .achievements-grid { grid-template-columns: repeat(2, 1fr); }
   .skills-grid { grid-template-columns: 1fr; }
 }
@@ -2050,7 +2057,8 @@ h1, h2, h3, h4, h5 {
   .projects-grid { grid-template-columns: 1fr; gap: 1rem; }
   .projects-loader { padding: 1.4rem; min-height: 300px; }
   .projects-loader-skeletons { grid-template-columns: 1fr; gap: 1rem; }
-  .project-skeleton:nth-child(2) { display: none; }
+  .project-skeleton:nth-child(2),
+  .project-skeleton:nth-child(3) { display: none; }
   .achievements-grid { grid-template-columns: 1fr; }
 
   .overlay-title { font-size: 1.8rem; }
