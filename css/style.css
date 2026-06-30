@@ -1175,23 +1175,23 @@ h1, h2, h3, h4, h5 {
   aspect-ratio: 1/1;
   border-radius: 18px;
   border-color: var(--border-accent);
-  max-width: 120px;
+  max-width: 160px;
   justify-self: center;
 }
 
 @media (max-width: 768px) {
-  .project-card-mobile { max-width: 90px; }
+  .project-card-mobile { max-width: 130px; }
 }
 
 .project-card-mobile-portrait .project-cover {
   object-fit: contain;
-  padding: 0.25rem;
+  padding: 1.25rem;
   background: var(--bg-primary);
 }
 
 .project-card-mobile-landscape .project-cover {
   object-fit: contain;
-  padding: 0.25rem 0.5rem;
+  padding: 0.75rem 1.5rem;
   background: var(--bg-primary);
 }
 
