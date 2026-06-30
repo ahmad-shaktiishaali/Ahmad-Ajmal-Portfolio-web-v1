@@ -94,18 +94,43 @@ function playGoldenSound() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const now = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
-    osc.frequency.exponentialRampToValueAtTime(1100, now + 0.2);
-    gain.gain.setValueAtTime(0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-    osc.start(now);
-    osc.stop(now + 0.45);
+
+    // Main chime tone
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1318, now);
+    osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.06);
+    gain1.gain.setValueAtTime(0.14, now);
+    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+    osc1.start(now);
+    osc1.stop(now + 0.55);
+
+    // Harmonic fifth (richer)
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1976, now);
+    gain2.gain.setValueAtTime(0.06, now);
+    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+    osc2.start(now);
+    osc2.stop(now + 0.35);
+
+    // Bright sparkle overtone
+    const osc3 = audioCtx.createOscillator();
+    const gain3 = audioCtx.createGain();
+    osc3.connect(gain3);
+    gain3.connect(audioCtx.destination);
+    osc3.type = 'sine';
+    osc3.frequency.setValueAtTime(2636, now);
+    gain3.gain.setValueAtTime(0.03, now);
+    gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+    osc3.start(now);
+    osc3.stop(now + 0.15);
   } catch (e) {}
 }
 
