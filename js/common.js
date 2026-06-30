@@ -260,6 +260,39 @@ function hidePreloader() {
   if (el) el.classList.add('hidden');
 }
 
+function initCursorGlow() {
+  if (window.innerWidth <= 768) return;
+  document.body.classList.add('custom-cursor');
+
+  const cursor = document.createElement('div');
+  cursor.id = 'cursorGlow';
+  document.body.appendChild(cursor);
+
+  let mouseX = 0, mouseY = 0;
+  let cursorX = 0, cursorY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top = mouseY + 'px';
+  });
+
+  const interactive = 'a, button, .project-card, .btn-primary, .btn-secondary, input, textarea, select, .golden-zone';
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.closest(interactive)) cursor.classList.add('enlarged');
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest(interactive)) cursor.classList.remove('enlarged');
+  });
+}
+
+function initNoiseOverlay() {
+  const div = document.createElement('div');
+  div.className = 'noise-overlay';
+  document.body.appendChild(div);
+}
+
 // Initialize everything on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   initStorage();
@@ -269,4 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Small delay for scroll reveal to ensure layout is ready
   setTimeout(initScrollReveal, 100);
   initClickSparkles();
+  initNoiseOverlay();
+  initCursorGlow();
 });
