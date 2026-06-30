@@ -26,6 +26,7 @@
       <a href="index.html" class="nav-link active">Home</a>
       <a href="work.html" class="nav-link">Work</a>
       <a href="play.html" class="nav-link">Play</a>
+      <a href="bhai.html" class="nav-link">Bhai Log</a>
       <a href="contact.html" class="nav-link">Contact</a>
     </div>
     <div class="nav-right">
@@ -111,6 +112,21 @@
         <div class="golden-zone reveal reveal-delay-2" id="goldenZone">
           <div class="golden-counter" id="goldCounter">0</div>
           <div class="golden-label"><span id="goldUnit">gold</span> collected</div>
+        </div>
+      </section>
+
+      <!-- Bhai Log Section -->
+      <section class="section" id="bhaiLog">
+        <span class="section-label reveal">Community</span>
+        <h2 class="section-title reveal">Bhai Log Members</h2>
+        <p class="section-subtitle reveal">The golden squad. Click a card to view all members.</p>
+        
+        <div class="bhai-grid" id="bhaiGrid">
+          <!-- Bhai cards populated via JS -->
+          <div class="empty-state reveal" id="bhaiEmpty" style="display: none;">
+            <div class="empty-icon">👥</div>
+            <div class="empty-text">No members yet.</div>
+          </div>
         </div>
       </section>
     </div>

@@ -26,7 +26,8 @@ const DEFAULT_DATA = {
   ],
   studios: [],
   projects: [],
-  achievements: []
+  achievements: [],
+  bhai: []
 };
 
 const firebaseConfig = {

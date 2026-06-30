@@ -2435,7 +2435,9 @@ body.custom-cursor .btn-diamond,
 body.custom-cursor .btn-theme-toggle,
 body.custom-cursor .btn-play,
 body.custom-cursor .game-card,
-body.custom-cursor #killBtn {
+body.custom-cursor #killBtn,
+body.custom-cursor .bhai-card,
+body.custom-cursor .bhai-quiz-btn {
   cursor: none;
 }
 
@@ -2552,6 +2554,156 @@ body.custom-cursor #killBtn {
   gap: 1rem;
 }
 
+/* ========== BHAI LOG ========== */
+.bhai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  padding: 2rem 0;
+}
+
+.bhai-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(200,169,81,0.08) 0%, rgba(200,169,81,0.03) 100%);
+  border: 1px solid rgba(200,169,81,0.2);
+  border-radius: 16px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.bhai-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 4px 20px rgba(200,169,81,0.15);
+  background: linear-gradient(135deg, rgba(200,169,81,0.12) 0%, rgba(200,169,81,0.05) 100%);
+}
+
+.bhai-card-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--accent);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bhai-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bhai-card-avatar {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.bhai-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bhai-card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bhai-card-intro {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.1rem;
+}
+
+.bhai-card-gender {
+  font-size: 0.65rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.15rem;
+}
+
+/* Bhai Page */
+.bhai-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  padding: 2rem 0;
+}
+
+/* Quiz */
+.bhai-quiz-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  animation: killFadeIn 0.3s ease;
+}
+
+.bhai-quiz-progress {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+}
+
+.bhai-quiz-question {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.bhai-quiz-options {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bhai-quiz-btn {
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--border-accent);
+  border-radius: 50px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bhai-quiz-btn:hover {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.bhai-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: 20px;
+  animation: killFadeIn 0.3s ease;
+}
+
 @media (max-width: 768px) {
   .games-grid {
     grid-template-columns: 1fr;
@@ -2563,5 +2715,9 @@ body.custom-cursor #killBtn {
   .game-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .bhai-grid,
+  .bhai-page-grid {
+    grid-template-columns: 1fr;
   }
 }

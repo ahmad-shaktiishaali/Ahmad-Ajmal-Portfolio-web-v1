@@ -27,6 +27,15 @@ async function loadHomeData() {
 
   }
 
+  let bhaiData = DEFAULT_DATA.bhai || [];
+  if (db) {
+    try {
+      const bhaiDoc = await db.collection('portfolio').doc('bhaiLog').get();
+      if (bhaiDoc.exists && bhaiDoc.data().items) bhaiData = bhaiDoc.data().items;
+    } catch (e) { console.error("Firebase bhai error:", e); }
+  }
+  window._bhaiData = bhaiData;
+
   // Render Profile
   try {
     document.getElementById('heroName').textContent = profile.name;
@@ -81,6 +90,9 @@ async function loadHomeData() {
     expContainer.innerHTML = html;
   }
 
+  // Render Bhai Log
+  renderBhaiLog();
+  
   // Golden Touch Interactive
   initGoldenTouch();
   
@@ -178,4 +190,29 @@ function initGoldenTouch() {
 
   zone.addEventListener('click', handleTap);
   zone.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); }, { passive: false });
+}
+
+function renderBhaiLog() {
+  const grid = document.getElementById('bhaiGrid');
+  const empty = document.getElementById('bhaiEmpty');
+  const data = window._bhaiData || [];
+  if (!grid) return;
+  if (data.length === 0) { if (empty) empty.style.display = 'block'; return; }
+  if (empty) empty.style.display = 'none';
+  let html = '';
+  data.forEach((member, i) => {
+    const delay = `reveal-delay-${(i % 3) + 1}`;
+    html += `
+      <a href="bhai.html" class="bhai-card reveal ${delay}">
+        <div class="bhai-card-photo">${member.photo ? `<img src="${member.photo}" alt="${member.name}">` : '<span class="bhai-card-avatar">' + (member.name ? member.name[0].toUpperCase() : '?') + '</span>'}</div>
+        <div class="bhai-card-body">
+          <div class="bhai-card-name">${member.name}</div>
+          <div class="bhai-card-intro">${member.intro || ''}</div>
+          <div class="bhai-card-gender">${member.gender || ''}</div>
+        </div>
+      </a>
+    `;
+  });
+  grid.innerHTML = html;
+  if (typeof initScrollReveal === 'function') setTimeout(initScrollReveal, 100);
 }

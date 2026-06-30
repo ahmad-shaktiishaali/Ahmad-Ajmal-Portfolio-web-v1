@@ -4,6 +4,7 @@ let projectsData = [];
 let achievementsData = [];
 let experienceData = [];
 let categoriesData = ['Default'];
+let bhaiData = [];
 
 // Working state for images
 let currentProjectImages = [];
@@ -171,6 +172,9 @@ async function loadAllData() {
     renderExperienceList();
     categoriesData = ['Default'];
     renderCategoriesList();
+    bhaiData = [];
+    renderBhaiAdminList();
+    initBhaiForm();
     return;
   }
   
@@ -233,6 +237,21 @@ async function loadAllData() {
     categoriesData = ['Default'];
   }
   renderCategoriesList();
+
+  // Load Bhai Log
+  try {
+    const bhaiDoc = await db.collection('portfolio').doc('bhaiLog').get();
+    if (bhaiDoc.exists && bhaiDoc.data().items) {
+      bhaiData = bhaiDoc.data().items;
+    } else {
+      bhaiData = [];
+    }
+  } catch (err) {
+    console.error("Firebase bhai error:", err);
+    bhaiData = [];
+  }
+  renderBhaiAdminList();
+  initBhaiForm();
 }
 
 /* ================= PROFILE LOGIC ================= */
@@ -945,6 +964,121 @@ async function saveCategories() {
     showToast('Categories updated!');
   } catch (err) {
     alert("Error saving categories: " + err.message);
+  }
+}
+
+/* ================= BHAI LOG CRUD ================= */
+function renderBhaiAdminList() {
+  const list = document.getElementById('adminBhaiList');
+  if (!list) return;
+  if (bhaiData.length === 0) {
+    list.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No members yet.</div>';
+    return;
+  }
+  let html = '';
+  bhaiData.forEach((m, idx) => {
+    html += `
+      <div class="admin-list-item">
+        ${m.photo ? `<img src="${m.photo}" class="admin-list-thumb" style="border-radius:50%;width:45px;height:45px;object-fit:cover;">` : '<div class="admin-list-thumb" style="border-radius:50%;width:45px;height:45px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;">' + (m.name ? m.name[0].toUpperCase() : '?') + '</div>'}
+        <div class="admin-list-info">
+          <div class="admin-list-title">${m.name} <span style="font-size:0.7rem;color:var(--text-muted);">(${m.gender || ''})</span></div>
+          <div class="admin-list-sub">${m.intro || ''}</div>
+        </div>
+        <div class="admin-item-actions">
+          <button class="btn-secondary" onclick="editBhaiMember('${idx}')">Edit</button>
+          <button class="btn-danger" onclick="deleteBhaiMember('${idx}')">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+}
+
+function initBhaiForm() {
+  const form = document.getElementById('bhaiForm');
+  if (!form) return;
+  document.getElementById('btnAddBhai').addEventListener('click', () => openBhaiForm());
+  document.getElementById('btnCancelBhai').addEventListener('click', closeBhaiForm);
+  document.getElementById('bhaiPhotoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 200;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > max) { h *= max / w; w = max; } }
+        else { if (h > max) { w *= max / h; h = max; } }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = canvas.toDataURL('image/jpeg', 0.7);
+        document.getElementById('bhaiPhotoPreview').innerHTML = `<img src="${data}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);">`;
+        document.getElementById('bhaiPhotoPreview').dataset.photo = data;
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('bhaiId').value;
+    const name = document.getElementById('bhaiName').value.trim();
+    const intro = document.getElementById('bhaiIntro').value.trim();
+    const gender = document.getElementById('bhaiGender').value;
+    const photo = document.getElementById('bhaiPhotoPreview').dataset.photo || '';
+    if (!name || !intro) { alert('Name and introduction are required.'); return; }
+    const member = { id: id || Date.now().toString(), name, intro, gender, photo };
+    if (id) {
+      const idx = bhaiData.findIndex(m => m.id === id);
+      if (idx !== -1) bhaiData[idx] = member;
+    } else {
+      bhaiData.push(member);
+    }
+    await saveBhaiData();
+    closeBhaiForm();
+    renderBhaiAdminList();
+    showToast('Member saved!');
+  });
+}
+
+function openBhaiForm(data) {
+  document.getElementById('bhaiFormContainer').style.display = 'block';
+  document.getElementById('bhaiFormTitle').textContent = data ? 'Edit Member' : 'Add Member';
+  document.getElementById('bhaiId').value = data ? data.id : '';
+  document.getElementById('bhaiName').value = data ? data.name : '';
+  document.getElementById('bhaiIntro').value = data ? data.intro : '';
+  document.getElementById('bhaiGender').value = data ? data.gender : 'Male';
+  document.getElementById('bhaiPhotoPreview').innerHTML = data && data.photo ? `<img src="${data.photo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);">` : '';
+  document.getElementById('bhaiPhotoPreview').dataset.photo = data ? data.photo : '';
+}
+
+function closeBhaiForm() {
+  document.getElementById('bhaiFormContainer').style.display = 'none';
+  document.getElementById('bhaiForm').reset();
+  document.getElementById('bhaiPhotoPreview').innerHTML = '';
+  document.getElementById('bhaiPhotoPreview').dataset.photo = '';
+}
+
+window.editBhaiMember = function(idx) {
+  openBhaiForm(bhaiData[idx]);
+};
+
+window.deleteBhaiMember = async function(idx) {
+  if (!confirm(`Delete ${bhaiData[idx].name}?`)) return;
+  bhaiData.splice(idx, 1);
+  await saveBhaiData();
+  renderBhaiAdminList();
+  showToast('Member deleted.');
+};
+
+async function saveBhaiData() {
+  try {
+    if (db) await db.collection('portfolio').doc('bhaiLog').set({ items: bhaiData });
+  } catch (err) {
+    alert("Error saving: " + err.message);
   }
 }
 
