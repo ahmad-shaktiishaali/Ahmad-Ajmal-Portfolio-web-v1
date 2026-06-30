@@ -24,7 +24,7 @@ function renderBhaiPage(data) {
   let html = '';
   data.forEach((m, i) => {
     html += `
-      <div class="bhai-card reveal reveal-delay-${(i % 4) + 1}" style="border-color:var(--accent);">
+      <div class="bhai-card reveal reveal-delay-${(i % 4) + 1}" data-name="${(m.name || '').replace(/"/g, '&quot;')}" data-intro="${(m.intro || '').replace(/"/g, '&quot;')}" data-gender="${(m.gender || '').replace(/"/g, '&quot;')}" data-photo="${(m.photo || '').replace(/"/g, '&quot;')}">
         <div class="bhai-card-photo">${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : '<span class="bhai-card-avatar">' + (m.name ? m.name[0].toUpperCase() : '?') + '</span>'}</div>
         <div class="bhai-card-body">
           <div class="bhai-card-name">${m.name}</div>
@@ -35,6 +35,18 @@ function renderBhaiPage(data) {
     `;
   });
   grid.innerHTML = html;
+
+  grid.querySelectorAll('.bhai-card').forEach(card => {
+    card.addEventListener('click', () => {
+      openBhaiOverlay({
+        name: card.dataset.name,
+        intro: card.dataset.intro,
+        gender: card.dataset.gender,
+        photo: card.dataset.photo
+      });
+    });
+  });
+
   if (typeof initScrollReveal === 'function') setTimeout(initScrollReveal, 100);
 }
 

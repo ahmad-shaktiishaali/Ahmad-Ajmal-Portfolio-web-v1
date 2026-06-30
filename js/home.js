@@ -203,16 +203,28 @@ function renderBhaiLog() {
   data.forEach((member, i) => {
     const delay = `reveal-delay-${(i % 3) + 1}`;
     html += `
-      <a href="bhai.html" class="bhai-card reveal ${delay}">
+      <div class="bhai-card reveal ${delay}" data-name="${member.name}" data-intro="${(member.intro || '').replace(/"/g, '&quot;')}" data-gender="${(member.gender || '').replace(/"/g, '&quot;')}" data-photo="${(member.photo || '').replace(/"/g, '&quot;')}">
         <div class="bhai-card-photo">${member.photo ? `<img src="${member.photo}" alt="${member.name}">` : '<span class="bhai-card-avatar">' + (member.name ? member.name[0].toUpperCase() : '?') + '</span>'}</div>
         <div class="bhai-card-body">
           <div class="bhai-card-name">${member.name}</div>
           <div class="bhai-card-intro">${member.intro || ''}</div>
           <div class="bhai-card-gender">${member.gender || ''}</div>
         </div>
-      </a>
+      </div>
     `;
   });
   grid.innerHTML = html;
+
+  grid.querySelectorAll('.bhai-card').forEach(card => {
+    card.addEventListener('click', () => {
+      openBhaiOverlay({
+        name: card.dataset.name,
+        intro: card.dataset.intro,
+        gender: card.dataset.gender,
+        photo: card.dataset.photo
+      });
+    });
+  });
+
   if (typeof initScrollReveal === 'function') setTimeout(initScrollReveal, 100);
 }

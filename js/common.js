@@ -438,7 +438,7 @@ function initCursorGlow() {
   cursor.id = 'cursorGlow';
   document.body.appendChild(cursor);
 
-  const trailCount = 5;
+  const trailCount = 8;
   const trailEls = [];
   for (let i = 0; i < trailCount; i++) {
     const dot = document.createElement('div');
@@ -449,7 +449,6 @@ function initCursorGlow() {
 
   let mouseX = 0, mouseY = 0;
   let trailIndex = 0;
-  let frameSkip = 0;
 
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
@@ -457,7 +456,6 @@ function initCursorGlow() {
     cursor.style.left = mouseX + 'px';
     cursor.style.top = mouseY + 'px';
 
-    if (frameSkip++ % 2 !== 0) return;
     const dot = trailEls[trailIndex];
     dot.x = mouseX;
     dot.y = mouseY;
@@ -468,15 +466,14 @@ function initCursorGlow() {
   function animateTrail() {
     for (const dot of trailEls) {
       if (dot.life > 0) {
-        dot.life -= 0.06;
-        const size = 8 + dot.life * 14;
-        const opacity = dot.life * 0.5;
+        dot.life -= 0.05;
+        const size = 6 + dot.life * 18;
+        const opacity = dot.life * 0.65;
         dot.el.style.width = size + 'px';
         dot.el.style.height = size + 'px';
-        dot.el.style.left = dot.x + 'px';
-        dot.el.style.top = dot.y + 'px';
+        dot.el.style.transform = 'translate(-50%, -50%) translate(' + dot.x + 'px,' + dot.y + 'px)';
         dot.el.style.opacity = opacity;
-        dot.el.style.background = `radial-gradient(circle, rgba(200,169,81,${opacity}) 0%, transparent 70%)`;
+        dot.el.style.background = 'radial-gradient(circle, rgba(200,169,81,' + (opacity * 1.2) + ') 0%, transparent 70%)';
       } else {
         dot.el.style.opacity = 0;
       }
@@ -514,3 +511,32 @@ document.addEventListener('DOMContentLoaded', () => {
   initCursorGlow();
   initKillBtn();
 });
+
+// Bhai Card Expand Overlay
+function openBhaiOverlay(member) {
+  const existing = document.querySelector('.bhai-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'bhai-overlay';
+  overlay.innerHTML = `
+    <div class="bhai-overlay-content">
+      <button class="bhai-overlay-close">&times;</button>
+      <div class="bhai-overlay-photo">${member.photo ? `<img src="${member.photo}" alt="${member.name}">` : '<div class="bhai-overlay-avatar">' + (member.name ? member.name[0].toUpperCase() : '?') + '</div>'}</div>
+      <div class="bhai-overlay-name">${member.name || ''}</div>
+      ${member.intro ? `<div class="bhai-overlay-intro">${member.intro}</div>` : ''}
+      ${member.gender ? `<div class="bhai-overlay-gender">${member.gender}</div>` : ''}
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => overlay.classList.add('active'));
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay || e.target.closest('.bhai-overlay-close')) {
+      overlay.classList.remove('active');
+      setTimeout(() => overlay.remove(), 300);
+    }
+  });
+}
