@@ -317,8 +317,6 @@ function showKillModal(title, msg, confirmText, cancelText, onConfirm, onCancel)
 }
 
 function startPanicSequence() {
-  document.body.classList.add('kill-panic');
-
   // Siren border
   const siren = document.createElement('div');
   siren.className = 'kill-siren';
@@ -363,31 +361,72 @@ function startPanicSequence() {
       siren.remove();
       panicOv.remove();
       counter.remove();
-      document.body.classList.remove('kill-panic');
       startBlackoutSequence();
     }
   }, 1000);
 }
 
+function playBoomSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.8);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.9);
+    osc.start(now);
+    osc.stop(now + 0.9);
+  } catch (e) {}
+}
+
 function startBlackoutSequence() {
+  playBoomSound();
   document.body.classList.add('kill-blackout');
 
-  const msg = document.createElement('div');
-  msg.className = 'kill-blackout-msg';
-  msg.innerHTML = `<h2>Muaahhahahha</h2>`;
-  document.body.appendChild(msg);
+  const overlay = document.createElement('div');
+  overlay.className = 'kill-blackout-msg';
+  overlay.style.opacity = '0';
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => { overlay.style.opacity = '1'; });
 
+  // Show "Muaahhahahha" after 3s
   setTimeout(() => {
-    msg.innerHTML = `
-      <h2 style="font-size:1.5rem;color:#c8a951;text-shadow:none;">Just kidding! 😅</h2>
-      <p style="color:#a09c97;font-size:0.9rem;max-width:300px;text-align:center;line-height:1.5;">I will never destroy this awesome web.<br>You're safe!</p>
-      <button class="btn-primary" id="killRestore">OK</button>
-    `;
-    msg.querySelector('#killRestore').addEventListener('click', () => {
-      document.body.classList.remove('kill-blackout');
-      msg.remove();
-    });
-  }, 2000);
+    overlay.style.transition = 'opacity 0.6s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.innerHTML = `<h2>Muaahhahahha</h2>`;
+      overlay.style.transition = 'opacity 0.6s ease';
+      overlay.style.opacity = '1';
+    }, 600);
+  }, 3000);
+
+  // Show joke message after another 3s
+  setTimeout(() => {
+    overlay.style.transition = 'opacity 0.6s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.innerHTML = `
+        <h2 style="font-size:1.5rem;color:#c8a951;text-shadow:none;">Just kidding! 😅</h2>
+        <p>I will never destroy this awesome web.<br>You're safe!</p>
+        <button class="btn-primary" id="killRestore">OK</button>
+      `;
+      overlay.style.transition = 'opacity 0.6s ease';
+      overlay.style.opacity = '1';
+      overlay.querySelector('#killRestore').addEventListener('click', () => {
+        overlay.style.transition = 'opacity 0.6s ease';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.remove();
+          document.body.classList.remove('kill-blackout');
+        }, 600);
+      });
+    }, 600);
+  }, 6500);
 }
 
 function initCursorGlow() {

@@ -2283,27 +2283,19 @@ h1, h2, h3, h4, h5 {
 }
 
 /* PANIC / RED ALERT STATE */
-body.kill-panic {
-  animation: killRedFlash 0.3s ease infinite alternate;
-}
-
-@keyframes killRedFlash {
-  from { filter: hue-rotate(0deg) saturate(1.2); }
-  to { filter: hue-rotate(-10deg) saturate(1.5); }
-}
-
 .kill-panic-overlay {
   position: fixed;
   inset: 0;
   z-index: 100001;
-  background: rgba(231,76,60,0.08);
+  background: rgba(231,76,60,0.12);
   pointer-events: none;
-  animation: killPanicPulse 0.5s ease infinite alternate;
+  animation: killPanicPulse 0.3s ease infinite alternate;
+  mix-blend-mode: overlay;
 }
 
 @keyframes killPanicPulse {
   from { opacity: 0.3; }
-  to { opacity: 0.8; }
+  to { opacity: 0.9; }
 }
 
 .kill-counter {
@@ -2333,33 +2325,31 @@ body.kill-panic {
   z-index: 99999;
   pointer-events: none;
   border: 8px solid var(--danger);
-  animation: killSiren 0.3s ease infinite alternate;
+  animation: killSiren 0.15s ease infinite alternate;
+  box-shadow: inset 0 0 100px rgba(231,76,60,0.15);
 }
 
 @keyframes killSiren {
-  from { border-width: 4px; opacity: 0.5; }
-  to { border-width: 12px; opacity: 1; }
+  from { border-width: 3px; opacity: 0.4; }
+  to { border-width: 10px; opacity: 1; }
 }
 
 /* BLACKOUT */
 body.kill-blackout {
-  background: #000 !important;
-}
-
-body.kill-blackout > :not(.kill-blackout-msg) {
-  display: none !important;
+  overflow: hidden;
 }
 
 .kill-blackout-msg {
-  display: none !important;
   position: fixed;
   inset: 0;
   z-index: 999999;
   background: #000;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: 1rem;
+  animation: killFadeIn 0.5s ease;
 }
 
 .kill-blackout-msg h2 {
@@ -2369,8 +2359,21 @@ body.kill-blackout > :not(.kill-blackout-msg) {
   text-shadow: 0 0 40px rgba(231,76,60,0.6);
 }
 
+.kill-blackout-msg p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.5;
+}
+
 .kill-blackout-msg .btn-primary {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.kill-blackout-fade {
+  opacity: 0;
+  transition: opacity 0.6s ease;
 }
 
 /* ========== NOISE OVERLAY ========== */
