@@ -2555,11 +2555,13 @@ body.custom-cursor .bhai-quiz-btn {
 }
 
 /* ========== BHAI LOG ========== */
-.bhai-grid {
+.bhai-grid,
+.bhai-page-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 280px));
+  gap: 1.5rem;
   padding: 2rem 0;
+  justify-content: center;
 }
 
 .bhai-card {
