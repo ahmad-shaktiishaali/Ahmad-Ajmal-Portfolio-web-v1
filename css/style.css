@@ -568,6 +568,15 @@ h1, h2, h3, h4, h5 {
   position: relative;
   overflow: hidden;
   border-radius: 40px;
+  background: radial-gradient(circle at 50% 40%, #f5d76e 0%, #c8a951 40%, #a68a30 100%);
+  box-shadow: 0 0 60px rgba(200,169,81,0.5), 0 0 120px rgba(200,169,81,0.2);
+  animation: heroGlow 2s ease-in-out forwards;
+}
+
+@keyframes heroGlow {
+  0% { box-shadow: 0 0 80px rgba(200,169,81,0.7), 0 0 160px rgba(200,169,81,0.4); }
+  50% { box-shadow: 0 0 100px rgba(200,169,81,0.8), 0 0 200px rgba(200,169,81,0.5); }
+  100% { box-shadow: 0 0 40px rgba(200,169,81,0.3), 0 0 80px rgba(200,169,81,0.1); }
 }
 
 .hero-photo-frame::before {
@@ -597,8 +606,15 @@ h1, h2, h3, h4, h5 {
   height: 100%;
   object-fit: cover;
   object-position: center top;
+  opacity: 0;
+  animation: heroReveal 1.2s ease 1.6s forwards;
   filter: contrast(1.05) brightness(0.95);
   transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.5s ease;
+}
+
+@keyframes heroReveal {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 .hero-photo-frame:hover .hero-photo {
