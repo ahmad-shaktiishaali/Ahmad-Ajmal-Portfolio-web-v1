@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadContactInfo();
   loadAchievements();
   document.getElementById('currentYear').textContent = new Date().getFullYear();
+  hidePreloader();
 });
 
 function loadContactInfo() {

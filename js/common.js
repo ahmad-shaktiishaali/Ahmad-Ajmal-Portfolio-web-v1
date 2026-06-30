@@ -255,6 +255,11 @@ function spawnSparkle(x, y) {
   requestAnimationFrame(animate);
 }
 
+function hidePreloader() {
+  const el = document.getElementById('preloader');
+  if (el) el.classList.add('hidden');
+}
+
 // Initialize everything on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   initStorage();

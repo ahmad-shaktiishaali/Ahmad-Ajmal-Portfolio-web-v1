@@ -63,6 +63,7 @@ async function loadProjects() {
     renderProjects([]);
   } finally {
     setProjectsLoading(false);
+    hidePreloader();
   }
 }
 

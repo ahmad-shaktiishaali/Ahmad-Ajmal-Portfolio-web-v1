@@ -85,6 +85,7 @@ async function loadHomeData() {
   initGoldenTouch();
   
   setTimeout(initScrollReveal, 100);
+  hidePreloader();
 }
 
 let audioCtx;
