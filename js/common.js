@@ -268,15 +268,51 @@ function initCursorGlow() {
   cursor.id = 'cursorGlow';
   document.body.appendChild(cursor);
 
+  const trailCount = 8;
+  const trailEls = [];
+  for (let i = 0; i < trailCount; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'cursor-trail-dot';
+    document.body.appendChild(dot);
+    trailEls.push({ el: dot, life: 0, x: 0, y: 0 });
+  }
+
   let mouseX = 0, mouseY = 0;
-  let cursorX = 0, cursorY = 0;
+  let trailIndex = 0;
 
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
     cursor.style.left = mouseX + 'px';
     cursor.style.top = mouseY + 'px';
+
+    const dot = trailEls[trailIndex];
+    dot.x = mouseX;
+    dot.y = mouseY;
+    dot.life = 1;
+    trailIndex = (trailIndex + 1) % trailCount;
   });
+
+  function animateTrail() {
+    for (const dot of trailEls) {
+      if (dot.life > 0) {
+        dot.life -= 0.04;
+        const size = 6 + dot.life * 12;
+        const opacity = dot.life * 0.35;
+        dot.el.style.width = size + 'px';
+        dot.el.style.height = size + 'px';
+        dot.el.style.left = dot.x + 'px';
+        dot.el.style.top = dot.y + 'px';
+        dot.el.style.opacity = opacity;
+        dot.el.style.background = `radial-gradient(circle, rgba(200,169,81,${opacity}) 0%, transparent 70%)`;
+        dot.el.style.boxShadow = `0 0 ${6 + dot.life * 6}px rgba(200,169,81,${opacity * 0.5})`;
+      } else {
+        dot.el.style.opacity = 0;
+      }
+    }
+    requestAnimationFrame(animateTrail);
+  }
+  animateTrail();
 
   const interactive = 'a, button, .project-card, .btn-primary, .btn-secondary, input, textarea, select, .golden-zone';
   document.addEventListener('mouseover', (e) => {

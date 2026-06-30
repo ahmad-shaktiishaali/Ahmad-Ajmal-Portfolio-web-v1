@@ -2199,6 +2199,15 @@ h1, h2, h3, h4, h5 {
   box-shadow: 0 0 25px rgba(200,169,81,0.25);
 }
 
+.cursor-trail-dot {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99997;
+  transform: translate(-50%, -50%);
+  will-change: width, height, opacity;
+}
+
 body.custom-cursor,
 body.custom-cursor a,
 body.custom-cursor button,
