@@ -2567,18 +2567,19 @@ body.custom-cursor .bhai-quiz-btn {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, rgba(200,169,81,0.08) 0%, rgba(200,169,81,0.03) 100%);
-  border: 1px solid rgba(200,169,81,0.2);
+  background: linear-gradient(135deg, rgba(200,169,81,0.25) 0%, rgba(200,169,81,0.1) 100%);
+  border: 1.5px solid var(--accent);
   border-radius: 16px;
   text-decoration: none;
   transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(200,169,81,0.2), inset 0 0 30px rgba(200,169,81,0.05);
 }
 
 .bhai-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent);
-  box-shadow: 0 4px 20px rgba(200,169,81,0.15);
-  background: linear-gradient(135deg, rgba(200,169,81,0.12) 0%, rgba(200,169,81,0.05) 100%);
+  transform: translateY(-4px);
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 25px rgba(200,169,81,0.4), 0 8px 30px rgba(200,169,81,0.2), inset 0 0 40px rgba(200,169,81,0.08);
+  background: linear-gradient(135deg, rgba(200,169,81,0.3) 0%, rgba(200,169,81,0.15) 100%);
 }
 
 .bhai-card-photo {
@@ -2587,11 +2588,12 @@ body.custom-cursor .bhai-quiz-btn {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  border: 2px solid var(--accent);
+  border: 2.5px solid var(--accent);
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 0 12px rgba(200,169,81,0.4);
 }
 
 .bhai-card-photo img {
@@ -2601,9 +2603,10 @@ body.custom-cursor .bhai-quiz-btn {
 }
 
 .bhai-card-avatar {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--accent);
+  text-shadow: 0 0 8px rgba(200,169,81,0.5);
 }
 
 .bhai-card-body {
@@ -2614,16 +2617,17 @@ body.custom-cursor .bhai-quiz-btn {
 .bhai-card-name {
   font-family: 'Playfair Display', serif;
   font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: #e8d48b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 0 6px rgba(200,169,81,0.3);
 }
 
 .bhai-card-intro {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: rgba(200,169,81,0.7);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2632,10 +2636,11 @@ body.custom-cursor .bhai-quiz-btn {
 
 .bhai-card-gender {
   font-size: 0.65rem;
-  color: var(--accent);
+  color: #f0df9c;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-top: 0.15rem;
+  text-shadow: 0 0 4px rgba(200,169,81,0.3);
 }
 
 /* Bhai Page */

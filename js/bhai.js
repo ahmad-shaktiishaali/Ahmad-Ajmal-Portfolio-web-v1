@@ -120,10 +120,8 @@ function askPhoto() {
       <div style="display:flex;flex-direction:column;gap:0.75rem;max-width:320px;margin:0 auto;">
         <input type="text" id="bhaiNameInput" class="form-input" placeholder="Your Name" required>
         <input type="text" id="bhaiIntroInput" class="form-input" placeholder="One line introduction" required>
-        <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
-          <label class="btn-secondary" style="cursor:pointer;font-size:0.8rem;">📷 Take Photo<input type="file" id="bhaiPhotoCam" accept="image/*" capture="user" style="display:none;"></label>
-          <label class="btn-secondary" style="cursor:pointer;font-size:0.8rem;">🖼 Upload Photo<input type="file" id="bhaiPhotoUpload" accept="image/*" style="display:none;"></label>
-        </div>
+        <label class="btn-secondary" style="cursor:pointer;font-size:0.8rem;text-align:center;">🖼 Upload Photo<input type="file" id="bhaiPhotoUpload" accept="image/*" style="display:none;"></label>
+        <div id="bhaiPhotoFeedback" style="font-size:0.8rem;color:var(--text-muted);min-height:1.2rem;"></div>
         <div id="bhaiPhotoPreview" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);margin:0 auto;overflow:hidden;display:none;"><img src="" style="width:100%;height:100%;object-fit:cover;"></div>
         <button class="btn-play" id="bhaiSaveBtn">Save My Card <span>→</span></button>
         <button class="btn-secondary" onclick="cancelQuiz()">Cancel</button>
@@ -132,11 +130,14 @@ function askPhoto() {
   `;
 
   let photoData = '';
+  const feedback = document.getElementById('bhaiPhotoFeedback');
 
-  function handlePhoto(file) {
+  document.getElementById('bhaiPhotoUpload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
     if (!file) return;
+    feedback.textContent = 'Processing image...';
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -151,17 +152,14 @@ function askPhoto() {
         const preview = document.getElementById('bhaiPhotoPreview');
         preview.style.display = 'block';
         preview.querySelector('img').src = photoData;
+        feedback.textContent = 'Photo uploaded successfully ✅';
+        feedback.style.color = '#2ecc71';
       };
-      img.src = e.target.result;
+      img.onerror = () => { feedback.textContent = 'Error loading image. Try another.'; feedback.style.color = '#e74c3c'; };
+      img.src = ev.target.result;
     };
+    reader.onerror = () => { feedback.textContent = 'Error reading file.'; feedback.style.color = '#e74c3c'; };
     reader.readAsDataURL(file);
-  }
-
-  document.getElementById('bhaiPhotoUpload').addEventListener('change', (e) => {
-    if (e.target.files[0]) handlePhoto(e.target.files[0]);
-  });
-  document.getElementById('bhaiPhotoCam').addEventListener('change', (e) => {
-    if (e.target.files[0]) handlePhoto(e.target.files[0]);
   });
 
   document.getElementById('bhaiSaveBtn').addEventListener('click', async () => {
@@ -169,6 +167,10 @@ function askPhoto() {
     const intro = document.getElementById('bhaiIntroInput').value.trim();
     if (!name) { alert('Please enter your name.'); return; }
     if (!intro) { alert('Please enter an introduction.'); return; }
+
+    const btn = document.getElementById('bhaiSaveBtn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
 
     const member = {
       id: Date.now().toString(),
@@ -178,19 +180,26 @@ function askPhoto() {
       photo: photoData || ''
     };
 
-    if (typeof db !== 'undefined' && db) {
-      try {
+    try {
+      if (typeof db !== 'undefined' && db) {
         const doc = await db.collection('portfolio').doc('bhaiLog').get();
         let items = [];
         if (doc.exists && doc.data().items) items = doc.data().items;
         items.push(member);
         await db.collection('portfolio').doc('bhaiLog').set({ items });
-      } catch (e) { console.error(e); }
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error saving. Try again.');
+      btn.textContent = 'Save My Card →';
+      btn.disabled = false;
+      return;
     }
 
     document.getElementById('quizSection').style.display = 'none';
     document.getElementById('bhaiPageGrid').style.display = '';
     document.getElementById('becomeBhaiBtn').style.display = '';
+    if (typeof showToast === 'function') showToast('Card saved! Welcome to Bhai Log 🎉');
     loadBhaiMembers();
   });
 }
