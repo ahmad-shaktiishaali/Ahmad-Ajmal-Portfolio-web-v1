@@ -260,6 +260,136 @@ function hidePreloader() {
   if (el) el.classList.add('hidden');
 }
 
+// ==================== KILL BUTTON FUN ====================
+function initKillBtn() {
+  const btn = document.createElement('button');
+  btn.id = 'killBtn';
+  btn.textContent = '✕';
+  btn.title = 'Destroy this website';
+  document.body.appendChild(btn);
+
+  let step = 0;
+
+  btn.addEventListener('click', () => {
+    if (step === 0) {
+      showKillModal(
+        'Are you sure?',
+        'Do you really want to destroy this website?',
+        'Yes, Destroy!',
+        'Cancel',
+        () => { step = 1; showKillModal(
+          'Last Warning!',
+          'The developer will cry if you do that. Please stop! 😢',
+          'DESTROY ANYWAY',
+          'OK, I\'ll stop',
+          () => { step = 2; startPanicSequence(); },
+          () => { step = 0; }
+        );},
+        () => { step = 0; }
+      );
+    }
+  });
+}
+
+function showKillModal(title, msg, confirmText, cancelText, onConfirm, onCancel) {
+  const overlay = document.createElement('div');
+  overlay.className = 'kill-overlay';
+  overlay.innerHTML = `
+    <div class="kill-modal">
+      <h3>${title}</h3>
+      <p>${msg}</p>
+      <div class="kill-modal-actions">
+        <button class="kill-btn-danger" id="killConfirm">${confirmText}</button>
+        <button class="kill-btn-safe" id="killCancel">${cancelText}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#killConfirm').addEventListener('click', () => {
+    overlay.remove();
+    if (onConfirm) onConfirm();
+  });
+  overlay.querySelector('#killCancel').addEventListener('click', () => {
+    overlay.remove();
+    if (onCancel) onCancel();
+  });
+}
+
+function startPanicSequence() {
+  document.body.classList.add('kill-panic');
+
+  // Siren border
+  const siren = document.createElement('div');
+  siren.className = 'kill-siren';
+  document.body.appendChild(siren);
+
+  // Red overlay
+  const panicOv = document.createElement('div');
+  panicOv.className = 'kill-panic-overlay';
+  document.body.appendChild(panicOv);
+
+  // Counter
+  const counter = document.createElement('div');
+  counter.className = 'kill-counter';
+  counter.textContent = '10';
+  document.body.appendChild(counter);
+
+  // Beep sound
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function beep() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  }
+
+  let count = 10;
+  counter.textContent = count;
+  beep();
+
+  const interval = setInterval(() => {
+    count--;
+    counter.textContent = count;
+    beep();
+    if (count <= 0) {
+      clearInterval(interval);
+      siren.remove();
+      panicOv.remove();
+      counter.remove();
+      document.body.classList.remove('kill-panic');
+      startBlackoutSequence();
+    }
+  }, 1000);
+}
+
+function startBlackoutSequence() {
+  document.body.classList.add('kill-blackout');
+
+  const msg = document.createElement('div');
+  msg.className = 'kill-blackout-msg';
+  msg.innerHTML = `<h2>Muaahhahahha</h2>`;
+  document.body.appendChild(msg);
+
+  setTimeout(() => {
+    msg.innerHTML = `
+      <h2 style="font-size:1.5rem;color:#c8a951;text-shadow:none;">Just kidding! 😅</h2>
+      <p style="color:#a09c97;font-size:0.9rem;max-width:300px;text-align:center;line-height:1.5;">I will never destroy this awesome web.<br>You're safe!</p>
+      <button class="btn-primary" id="killRestore">OK</button>
+    `;
+    msg.querySelector('#killRestore').addEventListener('click', () => {
+      document.body.classList.remove('kill-blackout');
+      msg.remove();
+    });
+  }, 2000);
+}
+
 function initCursorGlow() {
   if (window.innerWidth <= 768) return;
   document.body.classList.add('custom-cursor');
@@ -340,4 +470,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initClickSparkles();
   initNoiseOverlay();
   initCursorGlow();
+  initKillBtn();
 });
