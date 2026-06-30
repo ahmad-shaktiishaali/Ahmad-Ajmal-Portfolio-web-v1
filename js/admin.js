@@ -310,10 +310,11 @@ function renderProjectsList() {
   }
   
   let html = '';
-  projectsData.forEach(project => {
+  projectsData.forEach((project, index) => {
     const thumb = (project.images && project.images.length > 0) ? project.images[0] : '';
     html += `
-      <div class="admin-list-item">
+      <div class="admin-list-item" draggable="true" data-index="${index}">
+        <span class="admin-drag-handle">⠿</span>
         ${thumb ? `<img src="${thumb}" class="admin-list-thumb">` : `<div class="admin-list-thumb" style="background: var(--bg-primary);"></div>`}
         <div class="admin-list-info">
           <div class="admin-list-title" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -330,6 +331,53 @@ function renderProjectsList() {
     `;
   });
   list.innerHTML = html;
+}
+
+function initDragAndDrop() {
+  const list = document.getElementById('adminProjectsList');
+  let draggedItem = null;
+
+  list.addEventListener('dragstart', (e) => {
+    const item = e.target.closest('.admin-list-item');
+    if (!item) return;
+    draggedItem = item;
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item.dataset.index);
+  });
+
+  list.addEventListener('dragend', (e) => {
+    const item = e.target.closest('.admin-list-item');
+    if (item) item.classList.remove('dragging');
+    document.querySelectorAll('.admin-list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+  });
+
+  list.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const target = e.target.closest('.admin-list-item');
+    if (!target || target === draggedItem) return;
+    const rect = target.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    if (e.clientY < midY) {
+      target.classList.add('drag-over');
+      target.parentNode.insertBefore(draggedItem, target);
+    } else {
+      target.classList.remove('drag-over');
+      target.parentNode.insertBefore(draggedItem, target.nextSibling);
+    }
+  });
+
+  list.addEventListener('drop', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.admin-list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    if (!draggedItem) return;
+    const items = [...list.querySelectorAll('.admin-list-item')];
+    const newOrder = items.map(item => projectsData[parseInt(item.dataset.index)]);
+    projectsData = newOrder;
+    renderProjectsList();
+    saveAllProjectsToFirebase();
+  });
 }
 
 function initProjectForm() {
