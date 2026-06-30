@@ -2180,11 +2180,11 @@ h1, h2, h3, h4, h5 {
 /* ========== CURSOR GLOW ========== */
 #cursorGlow {
   position: fixed;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200,169,81,0.35) 0%, transparent 70%);
-  box-shadow: 0 0 15px rgba(200,169,81,0.15);
+  background: radial-gradient(circle, rgba(200,169,81,0.6) 0%, rgba(200,169,81,0.15) 50%, transparent 70%);
+  box-shadow: 0 0 30px rgba(200,169,81,0.3), 0 0 60px rgba(200,169,81,0.15);
   pointer-events: none;
   z-index: 99999;
   transform: translate(-50%, -50%);
@@ -2193,10 +2193,10 @@ h1, h2, h3, h4, h5 {
 }
 
 #cursorGlow.enlarged {
-  width: 48px;
-  height: 48px;
-  background: radial-gradient(circle, rgba(200,169,81,0.5) 0%, transparent 70%);
-  box-shadow: 0 0 25px rgba(200,169,81,0.25);
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(200,169,81,0.8) 0%, rgba(200,169,81,0.2) 50%, transparent 70%);
+  box-shadow: 0 0 40px rgba(200,169,81,0.5), 0 0 80px rgba(200,169,81,0.25);
 }
 
 .cursor-trail-dot {

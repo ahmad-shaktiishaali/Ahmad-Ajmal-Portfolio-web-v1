@@ -297,15 +297,15 @@ function initCursorGlow() {
     for (const dot of trailEls) {
       if (dot.life > 0) {
         dot.life -= 0.04;
-        const size = 6 + dot.life * 12;
-        const opacity = dot.life * 0.35;
+        const size = 10 + dot.life * 16;
+        const opacity = dot.life * 0.6;
         dot.el.style.width = size + 'px';
         dot.el.style.height = size + 'px';
         dot.el.style.left = dot.x + 'px';
         dot.el.style.top = dot.y + 'px';
         dot.el.style.opacity = opacity;
         dot.el.style.background = `radial-gradient(circle, rgba(200,169,81,${opacity}) 0%, transparent 70%)`;
-        dot.el.style.boxShadow = `0 0 ${6 + dot.life * 6}px rgba(200,169,81,${opacity * 0.5})`;
+        dot.el.style.boxShadow = `0 0 ${8 + dot.life * 10}px rgba(200,169,81,${opacity * 0.5})`;
       } else {
         dot.el.style.opacity = 0;
       }
