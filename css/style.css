@@ -605,25 +605,6 @@ h1, h2, h3, h4, h5 {
   filter: contrast(1.1) brightness(1);
 }
 
-.hero-accent-line {
-  position: absolute;
-  top: 20px;
-  right: -30px;
-  width: 60px;
-  height: 1.5px;
-  background: var(--accent);
-}
-
-.hero-accent-dot {
-  position: absolute;
-  bottom: 30px;
-  left: -15px;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-}
-
 .hero-info {
   flex: 1;
 }
@@ -641,12 +622,7 @@ h1, h2, h3, h4, h5 {
   gap: 1rem;
 }
 
-.hero-greeting::before {
-  content: '';
-  width: 40px;
-  height: 1px;
-  background: var(--accent);
-}
+
 
 .hero-name {
   font-size: 4rem;
@@ -2064,8 +2040,6 @@ h1, h2, h3, h4, h5 {
   .hero-section { padding: 3rem 1.5rem; min-height: auto; }
   .hero-content { flex-direction: column; text-align: center; gap: 2rem; }
   .hero-photo-frame { width: 220px; height: 280px; }
-  .hero-accent-line { display: none; }
-  .hero-accent-dot { display: none; }
   .hero-greeting { justify-content: center; }
   .hero-greeting::before { display: none; }
   .hero-name { font-size: 2.5rem; }
