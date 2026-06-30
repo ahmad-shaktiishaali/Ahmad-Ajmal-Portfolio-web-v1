@@ -27,6 +27,30 @@ const GAMES = [
     title: 'Reaction Time',
     desc: 'Click when the screen turns green. How fast are you?',
     icon: '⚡'
+  },
+  {
+    id: 'rps',
+    title: 'Rock Paper Scissors',
+    desc: 'Classic hand game. Choose your move and beat the computer.',
+    icon: '✊'
+  },
+  {
+    id: 'guess',
+    title: 'Number Guessing',
+    desc: 'Guess the secret number between 1 and 100.',
+    icon: '🔢'
+  },
+  {
+    id: 'dice',
+    title: 'Dice Roller',
+    desc: 'Roll the dice and try to beat the computer\'s score.',
+    icon: '🎲'
+  },
+  {
+    id: 'simon',
+    title: 'Simon Says',
+    desc: 'Remember the color sequence and repeat it. How long can you go?',
+    icon: '🔴'
   }
 ];
 
@@ -81,6 +105,10 @@ function launchGame(gameId) {
     case 'tictactoe': initTicTacToe(area); break;
     case 'memory': initMemory(area); break;
     case 'reaction': initReaction(area); break;
+    case 'rps': initRPS(area); break;
+    case 'guess': initGuess(area); break;
+    case 'dice': initDice(area); break;
+    case 'simon': initSimon(area); break;
   }
 }
 
@@ -461,6 +489,263 @@ function initReaction(container) {
   });
 
   reset();
+}
+
+// ==================== ROCK PAPER SCISSORS ====================
+function initRPS(container) {
+  const scoreEl = document.getElementById('gameScore');
+  const choices = ['rock', 'paper', 'scissors'];
+  const emojis = { rock: '✊', paper: '✋', scissors: '✌️' };
+  let playerScore = 0, compScore = 0;
+  window._gameActive = true;
+
+  const result = document.createElement('div');
+  result.style.cssText = 'text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;';
+
+  const picks = document.createElement('div');
+  picks.style.cssText = 'display:flex;gap:2rem;align-items:center;font-size:1.2rem;';
+
+  const msg = document.createElement('div');
+  msg.style.cssText = 'font-size:0.9rem;color:var(--text-secondary);';
+
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:0.75rem;margin-top:1rem;';
+
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-play';
+    btn.style.cssText = 'font-size:1.5rem;padding:0.5rem 1rem;min-width:70px;';
+    btn.textContent = emojis[c];
+    btn.addEventListener('click', () => {
+      const comp = choices[Math.floor(Math.random() * 3)];
+      const win = (c === 'rock' && comp === 'scissors') || (c === 'paper' && comp === 'rock') || (c === 'scissors' && comp === 'paper');
+      const draw = c === comp;
+      picks.innerHTML = `You ${emojis[c]} &nbsp;&nbsp;vs&nbsp;&nbsp; ${emojis[comp]} Computer`;
+      if (draw) { msg.textContent = 'Draw! 🤝'; msg.style.color = 'var(--accent)'; }
+      else if (win) { msg.textContent = 'You win! 🎉'; msg.style.color = '#2ecc71'; playerScore++; }
+      else { msg.textContent = 'Computer wins! 😔'; msg.style.color = '#e74c3c'; compScore++; }
+      scoreEl.textContent = `You ${playerScore} - ${compScore} Computer`;
+    });
+    btns.appendChild(btn);
+  });
+
+  result.appendChild(picks);
+  result.appendChild(msg);
+  container.appendChild(result);
+  container.appendChild(btns);
+
+  picks.innerHTML = 'Choose your move';
+  msg.textContent = 'Best of luck!';
+}
+
+// ==================== NUMBER GUESSING ====================
+function initGuess(container) {
+  const scoreEl = document.getElementById('gameScore');
+  let secret = Math.floor(Math.random() * 100) + 1;
+  let attempts = 0;
+  window._gameActive = true;
+
+  const area = document.createElement('div');
+  area.style.cssText = 'text-align:center;width:100%;max-width:350px;';
+
+  const hint = document.createElement('p');
+  hint.style.cssText = 'color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem;';
+  hint.textContent = 'Guess a number between 1 and 100';
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = 1;
+  input.max = 100;
+  input.placeholder = 'Enter your guess';
+  input.style.cssText = 'width:100%;padding:0.75rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text-primary);font-size:1rem;text-align:center;margin-bottom:0.75rem;outline:none;';
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-play';
+  btn.textContent = 'Guess';
+
+  const feedback = document.createElement('p');
+  feedback.style.cssText = 'font-size:0.9rem;min-height:1.5rem;margin-top:0.75rem;';
+
+  const restart = document.createElement('button');
+  restart.className = 'btn-secondary';
+  restart.textContent = 'New Game';
+  restart.style.marginTop = '0.75rem';
+
+  btn.addEventListener('click', () => {
+    const val = parseInt(input.value);
+    if (!val || val < 1 || val > 100) { feedback.textContent = 'Enter a number between 1-100'; feedback.style.color = 'var(--accent)'; return; }
+    attempts++;
+    if (val === secret) {
+      feedback.textContent = `Correct! 🎉 You got it in ${attempts} ${attempts === 1 ? 'try' : 'tries'}!`;
+      feedback.style.color = '#2ecc71';
+      scoreEl.textContent = 'You won!';
+      btn.disabled = true;
+    } else if (val < secret) {
+      feedback.textContent = 'Too low! 📉';
+      feedback.style.color = 'var(--accent)';
+    } else {
+      feedback.textContent = 'Too high! 📈';
+      feedback.style.color = 'var(--accent)';
+    }
+    scoreEl.textContent = 'Attempts: ' + attempts;
+  });
+
+  restart.addEventListener('click', () => {
+    secret = Math.floor(Math.random() * 100) + 1;
+    attempts = 0;
+    input.value = '';
+    feedback.textContent = '';
+    scoreEl.textContent = '';
+    btn.disabled = false;
+  });
+
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') btn.click(); });
+
+  area.appendChild(hint);
+  area.appendChild(input);
+  area.appendChild(btn);
+  area.appendChild(feedback);
+  area.appendChild(restart);
+  container.appendChild(area);
+}
+
+// ==================== DICE ROLLER ====================
+function initDice(container) {
+  const scoreEl = document.getElementById('gameScore');
+  let playerTotal = 0, compTotal = 0, rolls = 0;
+  window._gameActive = true;
+
+  const display = document.createElement('div');
+  display.style.cssText = 'text-align:center;';
+
+  const diceArea = document.createElement('div');
+  diceArea.style.cssText = 'display:flex;gap:2rem;justify-content:center;align-items:center;font-size:4rem;margin:1rem 0;';
+
+  const youDice = document.createElement('div');
+  youDice.textContent = '🎲';
+  const compDice = document.createElement('div');
+  compDice.textContent = '🎲';
+
+  const vs = document.createElement('div');
+  vs.style.cssText = 'font-size:1rem;color:var(--text-muted);';
+  vs.textContent = 'vs';
+
+  diceArea.appendChild(youDice);
+  diceArea.appendChild(vs);
+  diceArea.appendChild(compDice);
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-play';
+  btn.textContent = 'Roll Dice 🎲';
+  btn.style.marginTop = '0.5rem';
+
+  const result = document.createElement('p');
+  result.style.cssText = 'font-size:0.9rem;color:var(--text-secondary);margin-top:0.75rem;min-height:1.5rem;';
+
+  const restart = document.createElement('button');
+  restart.className = 'btn-secondary';
+  restart.textContent = 'Reset Game';
+  restart.style.marginTop = '0.5rem';
+
+  btn.addEventListener('click', () => {
+    const p = Math.floor(Math.random() * 6) + 1;
+    const c = Math.floor(Math.random() * 6) + 1;
+    const diceEmojis = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+    youDice.textContent = diceEmojis[p - 1];
+    compDice.textContent = diceEmojis[c - 1];
+    playerTotal += p;
+    compTotal += c;
+    rolls++;
+    if (p > c) result.textContent = `You win this round! (${p} vs ${c})`;
+    else if (p < c) result.textContent = `Computer wins this round! (${p} vs ${c})`;
+    else result.textContent = `Draw! (${p} vs ${c})`;
+    result.style.color = p > c ? '#2ecc71' : p < c ? '#e74c3c' : 'var(--accent)';
+    scoreEl.textContent = `You: ${playerTotal} | Computer: ${compTotal} (${rolls} ${rolls === 1 ? 'roll' : 'rolls'})`;
+  });
+
+  restart.addEventListener('click', () => {
+    playerTotal = 0; compTotal = 0; rolls = 0;
+    youDice.textContent = '🎲'; compDice.textContent = '🎲';
+    result.textContent = '';
+    scoreEl.textContent = '';
+  });
+
+  display.appendChild(diceArea);
+  display.appendChild(btn);
+  display.appendChild(result);
+  display.appendChild(restart);
+  container.appendChild(display);
+}
+
+// ==================== SIMON SAYS ====================
+function initSimon(container) {
+  const scoreEl = document.getElementById('gameScore');
+  const colors = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f'];
+  const labels = ['🔴', '🟢', '🔵', '🟡'];
+  let sequence = [];
+  let playerIndex = 0;
+  let playing = false;
+  let gameOver = false;
+  window._gameActive = true;
+
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;width:280px;height:280px;';
+
+  const btns = [];
+  colors.forEach((color, i) => {
+    const btn = document.createElement('div');
+    btn.style.cssText = `border-radius:16px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-size:2rem;background:${color};opacity:0.5;`;
+    btn.addEventListener('click', () => {
+      if (playing || gameOver) return;
+      lightUp(i);
+      if (i !== sequence[playerIndex]) {
+        gameOver = true;
+        scoreEl.textContent = 'Game Over! Score: ' + (sequence.length - 1);
+        return;
+      }
+      playerIndex++;
+      if (playerIndex >= sequence.length) {
+        scoreEl.textContent = 'Score: ' + sequence.length;
+        setTimeout(() => playRound(), 600);
+      }
+    });
+    grid.appendChild(btn);
+    btns.push(btn);
+  });
+
+  function lightUp(i) {
+    btns[i].style.opacity = '1';
+    btns[i].style.boxShadow = `0 0 20px ${colors[i]}`;
+    setTimeout(() => {
+      btns[i].style.opacity = '0.5';
+      btns[i].style.boxShadow = 'none';
+    }, 300);
+  }
+
+  function playRound() {
+    playerIndex = 0;
+    playing = true;
+    sequence.push(Math.floor(Math.random() * 4));
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i >= sequence.length) { clearInterval(interval); playing = false; return; }
+      lightUp(sequence[i]);
+      i++;
+    }, 500);
+  }
+
+  const startBtn = document.createElement('button');
+  startBtn.className = 'btn-play';
+  startBtn.textContent = 'Start Game';
+  startBtn.style.marginTop = '1rem';
+  startBtn.addEventListener('click', () => {
+    sequence = []; playerIndex = 0; playing = false; gameOver = false;
+    scoreEl.textContent = '';
+    playRound();
+  });
+
+  container.appendChild(grid);
+  container.appendChild(startBtn);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

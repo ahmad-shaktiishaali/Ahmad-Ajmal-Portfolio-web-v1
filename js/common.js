@@ -206,8 +206,9 @@ function showToast(message, type = 'success') {
 
 // Click Sparkle Effect
 function initClickSparkles() {
+  if (window.innerWidth <= 768) return;
   document.addEventListener('click', (e) => {
-    const count = 10 + Math.floor(Math.random() * 8);
+    const count = 5 + Math.floor(Math.random() * 6);
     for (let i = 0; i < count; i++) {
       spawnSparkle(e.clientX, e.clientY);
     }
@@ -230,7 +231,6 @@ function spawnSparkle(x, y) {
     background: radial-gradient(circle, #fff8e0, ${Math.random() > 0.5 ? '#c8a951' : '#dbb95e'});
     box-shadow: 0 0 ${6 + Math.random() * 8}px rgba(200,169,81,0.8), 0 0 ${20 + Math.random() * 20}px rgba(200,169,81,0.3);
     transform: translate(-50%, -50%);
-    will-change: transform, opacity;
   `;
 
   document.body.appendChild(el);
@@ -437,7 +437,7 @@ function initCursorGlow() {
   cursor.id = 'cursorGlow';
   document.body.appendChild(cursor);
 
-  const trailCount = 8;
+  const trailCount = 5;
   const trailEls = [];
   for (let i = 0; i < trailCount; i++) {
     const dot = document.createElement('div');
@@ -448,6 +448,7 @@ function initCursorGlow() {
 
   let mouseX = 0, mouseY = 0;
   let trailIndex = 0;
+  let frameSkip = 0;
 
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
@@ -455,6 +456,7 @@ function initCursorGlow() {
     cursor.style.left = mouseX + 'px';
     cursor.style.top = mouseY + 'px';
 
+    if (frameSkip++ % 2 !== 0) return;
     const dot = trailEls[trailIndex];
     dot.x = mouseX;
     dot.y = mouseY;
@@ -465,16 +467,15 @@ function initCursorGlow() {
   function animateTrail() {
     for (const dot of trailEls) {
       if (dot.life > 0) {
-        dot.life -= 0.04;
-        const size = 10 + dot.life * 16;
-        const opacity = dot.life * 0.6;
+        dot.life -= 0.06;
+        const size = 8 + dot.life * 14;
+        const opacity = dot.life * 0.5;
         dot.el.style.width = size + 'px';
         dot.el.style.height = size + 'px';
         dot.el.style.left = dot.x + 'px';
         dot.el.style.top = dot.y + 'px';
         dot.el.style.opacity = opacity;
         dot.el.style.background = `radial-gradient(circle, rgba(200,169,81,${opacity}) 0%, transparent 70%)`;
-        dot.el.style.boxShadow = `0 0 ${8 + dot.life * 10}px rgba(200,169,81,${opacity * 0.5})`;
       } else {
         dot.el.style.opacity = 0;
       }
@@ -493,6 +494,7 @@ function initCursorGlow() {
 }
 
 function initNoiseOverlay() {
+  if (window.innerWidth <= 768) return;
   const div = document.createElement('div');
   div.className = 'noise-overlay';
   document.body.appendChild(div);
