@@ -87,6 +87,29 @@ async function loadHomeData() {
   setTimeout(initScrollReveal, 100);
 }
 
+let audioCtx;
+
+function playGoldenSound() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.08);
+  osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.2);
+
+  gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 0.45);
+}
+
 function initGoldenTouch() {
   const zone = document.getElementById('goldenZone');
   const counter = document.getElementById('goldCounter');
@@ -99,6 +122,7 @@ function initGoldenTouch() {
     const x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
     const y = (e.clientY || e.touches?.[0]?.clientY || 0) - rect.top;
 
+    playGoldenSound();
     count++;
     counter.textContent = count;
     counter.style.transform = 'scale(1.3)';
