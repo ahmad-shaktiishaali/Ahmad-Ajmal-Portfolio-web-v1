@@ -569,7 +569,7 @@ h1, h2, h3, h4, h5 {
   overflow: hidden;
   border-radius: 40px;
   background: radial-gradient(circle at 50% 40%, #f5d76e 0%, #c8a951 40%, #a68a30 100%);
-  box-shadow: 0 0 60px rgba(200,169,81,0.4), 0 0 120px rgba(200,169,81,0.2);
+  box-shadow: 0 0 30px rgba(200,169,81,0.3);
 }
 
 .hero-photo-frame::before {
