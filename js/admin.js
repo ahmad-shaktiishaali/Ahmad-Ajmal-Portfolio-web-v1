@@ -342,6 +342,8 @@ function initProjectForm() {
   
   document.getElementById('btnCancelProject').addEventListener('click', closeProjectForm);
   document.getElementById('btnCancelProject2').addEventListener('click', closeProjectForm);
+
+  document.getElementById('projectPlatform').addEventListener('change', toggleOrientation);
   
   fileInput.addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
@@ -377,6 +379,7 @@ function initProjectForm() {
     if (!subtitleHtml) { alert('Subtitle is required.'); subtitleEl.focus(); return; }
     if (!detailHtml) { alert('Detail is required.'); detailEl.focus(); return; }
 
+    const platform = document.getElementById('projectPlatform').value;
     const project = {
       id: id,
       title: document.getElementById('projectTitle').value,
@@ -384,7 +387,9 @@ function initProjectForm() {
       detail: detailEl.innerHTML,
       isTopTier: document.getElementById('projectIsTopTier').checked,
       images: currentProjectImages,
-      category: document.getElementById('projectCategory').value || 'Default'
+      category: document.getElementById('projectCategory').value || 'Default',
+      platform: platform,
+      orientation: platform === 'mobile' ? document.getElementById('projectOrientation').value : ''
     };
     
     if (isNew) {
@@ -465,15 +470,25 @@ function openProjectForm(project = null) {
     document.getElementById('projectIsTopTier').checked = !!project.isTopTier;
     currentProjectImages = [...(project.images || [])];
     populateCategoryDropdown(project.category || 'Default');
+    document.getElementById('projectPlatform').value = project.platform || 'pc';
+    document.getElementById('projectOrientation').value = project.orientation || 'portrait';
   } else {
     document.getElementById('projectFormTitle').textContent = 'Add New Project';
     document.getElementById('projectId').value = '';
     document.getElementById('projectIsTopTier').checked = false;
     currentProjectImages = [];
     populateCategoryDropdown('Default');
+    document.getElementById('projectPlatform').value = 'pc';
+    document.getElementById('projectOrientation').value = 'portrait';
   }
   
+  toggleOrientation();
   renderProjectImages();
+}
+
+function toggleOrientation() {
+  const platform = document.getElementById('projectPlatform').value;
+  document.getElementById('orientationGroup').style.display = platform === 'mobile' ? 'block' : 'none';
 }
 
 function closeProjectForm() {

@@ -208,22 +208,27 @@ function renderProjects(data) {
   let html = '';
   data.forEach((project, index) => {
     const delayClass = `reveal-delay-${(index % 3) + 1}`;
+    const isMobile = project.platform === 'mobile';
+    const orientation = project.orientation || 'portrait';
+    
+    const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
+    const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
+    const subtitleHtml = renderSafeHtml(project.subtitle);
+    const platformClass = isMobile ? `project-card-mobile project-card-mobile-${orientation}` : '';
+    
     const coverImg = (project.images && project.images.length > 0) 
       ? project.images[0] 
       : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
       
-    const topTierClass = project.isTopTier ? 'project-card-top-tier' : '';
-    const badgeHtml = project.isTopTier ? '<div class="top-tier-badge">⭐ TOP TIER</div>' : '';
-    const subtitleHtml = renderSafeHtml(project.subtitle);
-      
     html += `
-      <div class="project-card reveal ${delayClass} ${topTierClass}" data-id="${project.id}">
+      <div class="project-card reveal ${delayClass} ${topTierClass} ${platformClass}" data-id="${project.id}">
         <img src="${coverImg}" alt="${project.title}" class="project-cover">
         ${badgeHtml}
         <div class="project-info">
           <h3 class="project-title">${project.title}</h3>
           <div class="project-subtitle">${subtitleHtml}</div>
         </div>
+        ${isMobile ? `<div class="platform-badge">${orientation === 'portrait' ? '📱' : '📱↔'}</div>` : ''}
       </div>
     `;
   });
@@ -287,11 +292,16 @@ function openProjectDetails(id) {
   const counter = document.getElementById('overlayCounter');
   gallery.innerHTML = '';
   
+  const isMobile = project.platform === 'mobile';
+  const orientation = project.orientation || 'portrait';
+  
   if (project.images && project.images.length > 0) {
     let galleryHtml = '';
     project.images.forEach((img, idx) => {
-      // Create individual wrapper for each image for potential lightbox/expansion
-      galleryHtml += `<img src="${img}" alt="Gallery image ${idx + 1}" class="overlay-gallery-img">`;
+      const imgClass = isMobile
+        ? `overlay-gallery-img overlay-gallery-${orientation}`
+        : 'overlay-gallery-img';
+      galleryHtml += `<img src="${img}" alt="Gallery image ${idx + 1}" class="${imgClass}" loading="lazy">`;
     });
     gallery.innerHTML = galleryHtml;
     counter.textContent = `${project.images.length} Image${project.images.length !== 1 ? 's' : ''}`;
