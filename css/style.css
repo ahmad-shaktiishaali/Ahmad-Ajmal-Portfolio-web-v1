@@ -2568,15 +2568,16 @@ body.custom-cursor .bhai-quiz-btn {
   flex-direction: column;
   align-items: center;
   gap: 0.6rem;
-  padding: 1.5rem 1rem;
-  background: linear-gradient(135deg, rgba(200,169,81,0.2) 0%, rgba(200,169,81,0.08) 100%);
-  border: 1.5px solid var(--accent);
-  border-radius: 16px;
+  padding: 1.5rem 1rem 1.25rem;
+  background: radial-gradient(circle at 35% 30%, #fff8e7 0%, #f5d76e 30%, #c8a951 60%, #a68a30 100%);
+  border: none;
+  border-radius: 18px;
   text-decoration: none;
   cursor: pointer;
   text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(200,169,81,0.15), inset 0 0 30px rgba(200,169,81,0.03);
+  transition: box-shadow 0.4s ease, transform 0.3s ease;
+  box-shadow: 0 0 40px rgba(200,169,81,0.4), 0 0 80px rgba(200,169,81,0.2);
+  animation: orbPulse 3s ease-in-out infinite;
   position: relative;
   overflow: hidden;
 }
@@ -2588,7 +2589,7 @@ body.custom-cursor .bhai-quiz-btn {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: conic-gradient(from 0deg, transparent, rgba(200,169,81,0.1), transparent, rgba(200,169,81,0.05), transparent);
+  background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.08), transparent, rgba(255,255,255,0.04), transparent);
   animation: bhaiShimmer 6s linear infinite;
   pointer-events: none;
 }
@@ -2599,10 +2600,9 @@ body.custom-cursor .bhai-quiz-btn {
 }
 
 .bhai-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--accent-hover);
-  box-shadow: 0 0 35px rgba(200,169,81,0.45), 0 8px 30px rgba(200,169,81,0.2), inset 0 0 50px rgba(200,169,81,0.06);
-  background: linear-gradient(135deg, rgba(200,169,81,0.28) 0%, rgba(200,169,81,0.12) 100%);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 60px rgba(200,169,81,0.6), 0 0 120px rgba(200,169,81,0.3);
+  animation-duration: 1.5s;
 }
 
 .bhai-card-photo {
@@ -2611,12 +2611,12 @@ body.custom-cursor .bhai-quiz-btn {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  border: 3px solid var(--accent);
-  background: var(--bg-secondary);
+  border: 3px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 18px rgba(200,169,81,0.45);
+  box-shadow: 0 0 20px rgba(255,255,255,0.3);
   position: relative;
   z-index: 1;
 }
@@ -2628,10 +2628,10 @@ body.custom-cursor .bhai-quiz-btn {
 }
 
 .bhai-card-avatar {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: var(--accent);
-  text-shadow: 0 0 10px rgba(200,169,81,0.5);
+  color: #3d2e0a;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.3);
 }
 
 .bhai-card-body {
@@ -2645,8 +2645,8 @@ body.custom-cursor .bhai-quiz-btn {
   font-family: 'Playfair Display', serif;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #e8d48b;
-  text-shadow: 0 0 8px rgba(200,169,81,0.3);
+  color: #3d2e0a;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2654,7 +2654,7 @@ body.custom-cursor .bhai-quiz-btn {
 
 .bhai-card-intro {
   font-size: 0.75rem;
-  color: rgba(200,169,81,0.7);
+  color: #5a4215;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2663,11 +2663,11 @@ body.custom-cursor .bhai-quiz-btn {
 
 .bhai-card-gender {
   font-size: 0.6rem;
-  color: #f0df9c;
+  color: #3d2e0a;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   margin-top: 0.2rem;
-  text-shadow: 0 0 4px rgba(200,169,81,0.3);
+  text-shadow: 0 1px 1px rgba(255,255,255,0.2);
 }
 
 /* Bhai Expand Overlay */
@@ -2693,14 +2693,14 @@ body.custom-cursor .bhai-quiz-btn {
 }
 
 .bhai-overlay-content {
-  background: linear-gradient(145deg, #1a1510 0%, #0f0d0a 100%);
-  border: 1.5px solid var(--accent);
+  background: radial-gradient(circle at 35% 30%, #fff8e7 0%, #f5d76e 30%, #c8a951 60%, #a68a30 100%);
+  border: none;
   border-radius: 20px;
   padding: 2rem;
   max-width: 380px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 0 50px rgba(200,169,81,0.2), inset 0 0 40px rgba(200,169,81,0.03);
+  box-shadow: 0 0 60px rgba(200,169,81,0.5), 0 0 120px rgba(200,169,81,0.25);
   transform: scale(0.9);
   transition: transform 0.3s ease;
   position: relative;
@@ -2712,17 +2712,17 @@ body.custom-cursor .bhai-quiz-btn {
 
 .bhai-overlay-close {
   position: absolute;
-  top: 0.75rem;
-  right: 1rem;
-  color: var(--accent);
-  font-size: 1.5rem;
+  top: 0.5rem;
+  right: 0.75rem;
+  color: #3d2e0a;
+  font-size: 1.8rem;
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
   background: none;
   border: none;
   padding: 0;
   line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
 .bhai-overlay-close:hover {
@@ -2735,8 +2735,8 @@ body.custom-cursor .bhai-quiz-btn {
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto 1rem;
-  border: 3px solid var(--accent);
-  box-shadow: 0 0 25px rgba(200,169,81,0.4);
+  border: 3px solid rgba(255,255,255,0.6);
+  box-shadow: 0 0 30px rgba(255,255,255,0.3);
 }
 
 .bhai-overlay-photo img {
@@ -2748,8 +2748,8 @@ body.custom-cursor .bhai-quiz-btn {
 .bhai-overlay-avatar {
   font-size: 3rem;
   font-weight: 700;
-  color: var(--accent);
-  text-shadow: 0 0 15px rgba(200,169,81,0.5);
+  color: #3d2e0a;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.3);
   line-height: 120px;
 }
 
@@ -2757,14 +2757,14 @@ body.custom-cursor .bhai-quiz-btn {
   font-family: 'Playfair Display', serif;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #e8d48b;
-  text-shadow: 0 0 10px rgba(200,169,81,0.3);
+  color: #3d2e0a;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.2);
   margin-bottom: 0.5rem;
 }
 
 .bhai-overlay-intro {
   font-size: 0.9rem;
-  color: rgba(200,169,81,0.8);
+  color: #5a4215;
   line-height: 1.6;
   margin-bottom: 0.75rem;
   word-wrap: break-word;
@@ -2772,10 +2772,10 @@ body.custom-cursor .bhai-quiz-btn {
 
 .bhai-overlay-gender {
   font-size: 0.7rem;
-  color: #f0df9c;
+  color: #3d2e0a;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  text-shadow: 0 0 4px rgba(200,169,81,0.3);
+  text-shadow: 0 1px 1px rgba(255,255,255,0.2);
 }
 
 /* Quiz */
