@@ -2221,6 +2221,135 @@ body.custom-cursor .golden-zone,
 body.custom-cursor .admin-list-item,
 body.custom-cursor .nav-link,
 body.custom-cursor .btn-diamond,
-body.custom-cursor .btn-theme-toggle {
+body.custom-cursor .btn-theme-toggle,
+body.custom-cursor .btn-play,
+body.custom-cursor .game-card {
   cursor: none;
+}
+
+/* ========== PLAY PAGE ========== */
+.play-hero {
+  text-align: center;
+  padding: 5rem 1.5rem 0;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem 0 4rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.game-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-lg);
+}
+
+.game-card-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.game-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+}
+
+.game-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.btn-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(200,169,81,0.3), 0 4px 15px rgba(200,169,81,0.2);
+}
+
+.btn-play:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(200,169,81,0.5), 0 6px 25px rgba(200,169,81,0.3);
+}
+
+.btn-play:active {
+  transform: scale(0.97);
+}
+
+/* Game Container */
+.game-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 0 1.5rem 4rem;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.game-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.game-score {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+  .game-card {
+    padding: 1.5rem 1rem;
+  }
+  .game-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
