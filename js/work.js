@@ -6,6 +6,7 @@ let searchQuery = '';
 const PROJECT_LOADER_MIN_MS = 650;
 let projectsLoadingStartedAt = 0;
 let projectsLoadingTimer = null;
+let projectOverlayOpen = false;
 
 function projectsCollection() {
   return db.collection('portfolio').doc('projects').collection('items');
@@ -37,6 +38,7 @@ async function loadProjects() {
   if (!db) {
     setProjectsLoading(false);
     renderProjects([]);
+    hidePreloader();
     return;
   }
   
@@ -57,6 +59,7 @@ async function loadProjects() {
     projectsData.sort((a, b) => (b.isTopTier ? 1 : 0) - (a.isTopTier ? 1 : 0));
     renderCategoryFilters();
     applyFilters();
+    openProjectFromUrl();
     
   } catch (e) {
     console.error("Error loading projects from Firebase", e);
@@ -222,7 +225,7 @@ function renderProjects(data) {
       : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
       
     html += `
-      <div class="project-card reveal ${delayClass} ${topTierClass} ${platformClass}" data-id="${project.id}">
+      <article class="project-card reveal ${delayClass} ${topTierClass} ${platformClass}" data-id="${project.id}">
         <img src="${coverImg}" alt="${project.title}" class="project-cover">
         ${badgeHtml}
         <div class="project-info">
@@ -230,7 +233,7 @@ function renderProjects(data) {
           <div class="project-subtitle">${subtitleHtml}</div>
         </div>
         ${isMobile ? `<div class="platform-badge">${orientation === 'portrait' ? '📱' : '📱↔'}</div>` : ''}
-      </div>
+      </article>
     `;
   });
   
@@ -259,6 +262,8 @@ function initProjectOverlay() {
   const grid = document.getElementById('projectsGrid');
   const overlay = document.getElementById('projectOverlay');
   const closeBtn = document.getElementById('closeProjectOverlay');
+  const backLink = document.getElementById('overlayBackLink');
+  const copyLinkBtn = document.getElementById('copyProjectLink');
   
   if (!grid || !overlay) return;
   
@@ -268,21 +273,100 @@ function initProjectOverlay() {
     if (!card) return;
     
     const projectId = card.getAttribute('data-id');
-    openProjectDetails(projectId);
+    openProjectDetails(projectId, { updateUrl: true });
   });
   
   closeBtn.addEventListener('click', closeProjectOverlay);
+  backLink?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeProjectOverlay({ updateUrl: true });
+  });
+
+  copyLinkBtn?.addEventListener('click', async () => {
+    const projectId = overlay.getAttribute('data-project-id');
+    if (!projectId) return;
+    const url = getProjectUrl(projectId);
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Project link copied!');
+    } catch (e) {
+      window.prompt('Copy this project link:', url);
+    }
+  });
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeProjectOverlay({ updateUrl: true });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && projectOverlayOpen) {
+      closeProjectOverlay({ updateUrl: true });
+    }
+  });
+
+  window.addEventListener('popstate', () => {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (id) {
+      openProjectDetails(id, { updateUrl: false });
+    } else if (projectOverlayOpen) {
+      closeProjectOverlay({ updateUrl: false });
+    }
+  });
 }
 
-function openProjectDetails(id) {
+function getProjectUrl(id) {
+  const url = new URL(window.location.href);
+  url.pathname = url.pathname.replace(/[^/]*$/, 'work.html');
+  url.search = '';
+  url.searchParams.set('id', id);
+  url.hash = '';
+  return url.toString();
+}
+
+function openProjectFromUrl() {
+  const id = new URLSearchParams(window.location.search).get('id');
+  if (id) openProjectDetails(id, { updateUrl: false });
+}
+
+function openProjectDetails(id, options = {}) {
+  const { updateUrl = false } = options;
   const project = projectsData.find(p => p.id == id);
   if (!project) return;
   
   const overlay = document.getElementById('projectOverlay');
+  const hero = document.getElementById('overlayHero');
+  const badges = document.getElementById('overlayBadges');
+  const copyLinkBtn = document.getElementById('copyProjectLink');
+  const isMobile = project.platform === 'mobile';
+  const orientation = project.orientation || 'portrait';
+  const coverImg = (project.images && project.images.length > 0) ? project.images[0] : '';
   
   // Populate details
   document.getElementById('overlayTitle').textContent = project.title;
   document.getElementById('overlaySubtitle').innerHTML = renderSafeHtml(project.subtitle);
+  overlay.setAttribute('data-project-id', project.id);
+  document.title = `${project.title} | Portfolio`;
+
+  if (hero) {
+    hero.innerHTML = coverImg
+      ? `<img src="${coverImg}" alt="${project.title}" class="overlay-hero-img ${isMobile ? `overlay-hero-${orientation}` : ''}">`
+      : '';
+    hero.style.display = coverImg ? 'block' : 'none';
+  }
+
+  if (badges) {
+    const badgesHtml = [
+      project.isTopTier ? '<span>Top Tier</span>' : '',
+      project.category ? `<span>${project.category}</span>` : '',
+      isMobile ? `<span>${orientation === 'portrait' ? 'Mobile Portrait' : 'Mobile Landscape'}</span>` : ''
+    ].filter(Boolean).join('');
+    badges.innerHTML = badgesHtml;
+    badges.style.display = badgesHtml ? 'flex' : 'none';
+  }
+
+  if (copyLinkBtn) {
+    copyLinkBtn.textContent = 'Copy Link';
+  }
   
   // Render formatted detail
   const detailEl = document.getElementById('overlayDetail');
@@ -293,16 +377,13 @@ function openProjectDetails(id) {
   const counter = document.getElementById('overlayCounter');
   gallery.innerHTML = '';
   
-  const isMobile = project.platform === 'mobile';
-  const orientation = project.orientation || 'portrait';
-  
   if (project.images && project.images.length > 0) {
     let galleryHtml = '';
-    project.images.forEach((img, idx) => {
+    project.images.slice(coverImg ? 1 : 0).forEach((img, idx) => {
       const imgClass = isMobile
         ? `overlay-gallery-img overlay-gallery-${orientation}`
         : 'overlay-gallery-img';
-      galleryHtml += `<img src="${img}" alt="Gallery image ${idx + 1}" class="${imgClass}" loading="lazy">`;
+      galleryHtml += `<img src="${img}" alt="Gallery image ${idx + 2}" class="${imgClass}" loading="lazy">`;
     });
     gallery.innerHTML = galleryHtml;
     counter.textContent = `${project.images.length} Image${project.images.length !== 1 ? 's' : ''}`;
@@ -311,22 +392,41 @@ function openProjectDetails(id) {
   }
   
   // Save scroll position and show overlay
-  currentScrollY = window.scrollY;
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${currentScrollY}px`;
-  document.body.style.width = '100%';
+  if (!projectOverlayOpen) {
+    currentScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${currentScrollY}px`;
+    document.body.style.width = '100%';
+  }
   
+  projectOverlayOpen = true;
   overlay.classList.add('active');
   overlay.scrollTop = 0; // Reset scroll inside overlay
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('id', project.id);
+    history.pushState({ projectId: project.id }, '', url);
+  }
 }
 
-function closeProjectOverlay() {
+function closeProjectOverlay(options = {}) {
+  const { updateUrl = false } = options;
   const overlay = document.getElementById('projectOverlay');
   overlay.classList.remove('active');
+  overlay.removeAttribute('data-project-id');
+  projectOverlayOpen = false;
+  document.title = 'Portfolio | Work';
   
   // Restore body scroll
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.width = '';
   window.scrollTo(0, currentScrollY);
+
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('id');
+    history.replaceState({}, '', url);
+  }
 }

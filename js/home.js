@@ -5,10 +5,44 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
+function projectsCollection() {
+  return db.collection('portfolio').doc('projects').collection('items');
+}
+
+async function loadProjectsFromFirebase() {
+  const snapshot = await projectsCollection().get();
+  if (!snapshot.empty) {
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  const legacyDoc = await db.collection('portfolio').doc('projects').get();
+  if (legacyDoc.exists && legacyDoc.data().items) {
+    return legacyDoc.data().items;
+  }
+
+  return DEFAULT_DATA.projects || [];
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function stripHtml(value) {
+  const template = document.createElement('template');
+  template.innerHTML = value || '';
+  return template.content.textContent || '';
+}
+
 async function loadHomeData() {
   let profile = DEFAULT_DATA.profile;
   let skills = DEFAULT_DATA.skills;
   let experience = DEFAULT_DATA.experience;
+  let featuredProjects = DEFAULT_DATA.projects || [];
   if (db) {
     try {
       const profileDoc = await db.collection('portfolio').doc('profile').get();
@@ -24,6 +58,10 @@ async function loadHomeData() {
       const expDoc = await db.collection('portfolio').doc('experience').get();
       if (expDoc.exists && expDoc.data().items) experience = expDoc.data().items;
     } catch (e) { console.error("Firebase exp error:", e); }
+
+    try {
+      featuredProjects = await loadProjectsFromFirebase();
+    } catch (e) { console.error("Firebase featured projects error:", e); }
 
   }
 
@@ -49,6 +87,8 @@ async function loadHomeData() {
       document.getElementById('heroPhoto').src = profile.photo;
     }
   } catch (e) { console.error(e); }
+
+  renderFeaturedProjects(featuredProjects);
 
   // Render Skills
   const skillsContainer = document.getElementById('skillsContainer');
@@ -98,6 +138,49 @@ async function loadHomeData() {
   
   setTimeout(initScrollReveal, 100);
   hidePreloader();
+}
+
+function renderFeaturedProjects(projects) {
+  const grid = document.getElementById('featuredProjectsGrid');
+  const section = document.getElementById('featuredProjectsSection');
+  if (!grid || !section) return;
+
+  const featured = [...(projects || [])]
+    .sort((a, b) => (b.isTopTier ? 1 : 0) - (a.isTopTier ? 1 : 0))
+    .slice(0, 3);
+
+  if (featured.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = '';
+  grid.innerHTML = featured.map((project, index) => {
+    const cover = project.images && project.images.length
+      ? project.images[0]
+      : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22600%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%231e1e21%22/%3E%3C/svg%3E';
+    const subtitle = escapeHtml(stripHtml(project.subtitle));
+    const title = escapeHtml(project.title);
+    const url = `work.html?id=${encodeURIComponent(project.id)}`;
+    const delay = `reveal-delay-${(index % 3) + 1}`;
+    const rank = String(index + 1).padStart(2, '0');
+
+    return `
+      <a class="featured-card reveal ${delay}" href="${url}">
+        <img src="${cover}" alt="${title}" class="featured-card-img">
+        <div class="featured-card-shade"></div>
+        <div class="featured-card-meta">
+          <span class="featured-rank">${rank}</span>
+          ${project.isTopTier ? '<span class="featured-pill">Top Tier</span>' : ''}
+        </div>
+        <div class="featured-card-body">
+          <h3>${title}</h3>
+          <p>${subtitle}</p>
+          <span class="featured-card-link">View Project →</span>
+        </div>
+      </a>
+    `;
+  }).join('');
 }
 
 let audioCtx;

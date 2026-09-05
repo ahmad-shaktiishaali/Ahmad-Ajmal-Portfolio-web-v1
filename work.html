@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poetfolio | Work</title>
+  <title>Portfolio | Work</title>
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -12,7 +12,7 @@
   <!-- Preloader -->
   <div id="preloader">
     <div class="preloader-orb"></div>
-    <div class="preloader-text">Poetfolio</div>
+    <div class="preloader-text">Portfolio</div>
     <div class="preloader-sub">Ahmad Ajmal</div>
     <div class="preloader-bar"><div class="preloader-fill"></div></div>
   </div>
@@ -92,15 +92,19 @@
   <!-- Project Detail Overlay -->
   <div class="project-overlay" id="projectOverlay">
     <div class="overlay-header">
+      <a href="work.html" class="overlay-back-link" id="overlayBackLink">All Work</a>
+      <button class="overlay-copy-link" id="copyProjectLink" type="button">Copy Link</button>
       <button class="overlay-close" id="closeProjectOverlay">✕</button>
     </div>
     <div class="overlay-content">
+      <div class="overlay-hero" id="overlayHero"></div>
       <div class="overlay-meta">
         <h2 class="overlay-title" id="overlayTitle">Project Title</h2>
+        <div class="overlay-badges" id="overlayBadges"></div>
         <div class="overlay-subtitle" id="overlaySubtitle">Project Subtitle</div>
       </div>
       
-      <p class="overlay-detail" id="overlayDetail"></p>
+      <div class="overlay-detail" id="overlayDetail"></div>
       
       <div class="overlay-divider"></div>
       
