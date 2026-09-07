@@ -17,7 +17,7 @@ html[data-theme="dark"] {
   --accent-hover: #dbb95e;
   --accent-dim: rgba(200,169,81,0.12);
   --accent-glow: rgba(200,169,81,0.08);
-  --stat-glow: rgba(200,169,81,0.68);
+  --stat-glow: rgba(200,169,81,0.32);
   --border: rgba(255,255,255,0.06);
   --border-accent: rgba(200,169,81,0.25);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
@@ -43,7 +43,7 @@ html[data-theme="light"] {
   --accent-hover: #a47d1a;
   --accent-dim: rgba(139,105,20,0.08);
   --accent-glow: rgba(139,105,20,0.05);
-  --stat-glow: rgba(139,105,20,0.42);
+  --stat-glow: rgba(139,105,20,0.22);
   --border: rgba(0,0,0,0.08);
   --border-accent: rgba(139,105,20,0.25);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
@@ -69,7 +69,7 @@ html[data-theme="maroon"] {
   --accent-hover: #efc340;
   --accent-dim: rgba(212,175,55,0.12);
   --accent-glow: rgba(212,175,55,0.08);
-  --stat-glow: rgba(212,175,55,0.68);
+  --stat-glow: rgba(212,175,55,0.34);
   --border: rgba(255,255,255,0.08);
   --border-accent: rgba(212,175,55,0.25);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
@@ -95,7 +95,7 @@ html[data-theme="ocean"] {
   --accent-hover: #3ae0ff;
   --accent-dim: rgba(0,210,255,0.12);
   --accent-glow: rgba(0,210,255,0.08);
-  --stat-glow: rgba(0,210,255,0.58);
+  --stat-glow: rgba(0,210,255,0.3);
   --border: rgba(255,255,255,0.08);
   --border-accent: rgba(0,210,255,0.25);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
@@ -121,7 +121,7 @@ html[data-theme="forest"] {
   --accent-hover: #ffcc70;
   --accent-dim: rgba(255,177,66,0.12);
   --accent-glow: rgba(255,177,66,0.08);
-  --stat-glow: rgba(255,177,66,0.62);
+  --stat-glow: rgba(255,177,66,0.32);
   --border: rgba(255,255,255,0.08);
   --border-accent: rgba(255,177,66,0.25);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
@@ -687,7 +687,7 @@ h1, h2, h3, h4, h5 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 5px var(--stat-glow)) drop-shadow(0 0 14px var(--stat-glow));
+  filter: drop-shadow(0 0 3px var(--stat-glow)) drop-shadow(0 0 8px var(--stat-glow));
   animation: statShimmer 5s ease-in-out infinite;
 }
 
@@ -704,13 +704,15 @@ h1, h2, h3, h4, h5 {
 }
 
 .hero-stat-line::before {
-  opacity: 0.58;
-  filter: blur(5px);
+  --glow-min-opacity: 0.1;
+  --glow-max-opacity: 0.22;
+  filter: blur(4px);
 }
 
 .hero-stat-line::after {
-  opacity: 0.28;
-  filter: blur(14px);
+  --glow-min-opacity: 0.04;
+  --glow-max-opacity: 0.1;
+  filter: blur(10px);
 }
 
 .hero-stat-line:nth-child(2) {
@@ -728,8 +730,8 @@ h1, h2, h3, h4, h5 {
 }
 
 @keyframes statGlowPulse {
-  0%, 100% { opacity: 0.32; }
-  50% { opacity: 0.78; }
+  0%, 100% { opacity: var(--glow-min-opacity); }
+  50% { opacity: var(--glow-max-opacity); }
 }
 
 .hero-cta {
