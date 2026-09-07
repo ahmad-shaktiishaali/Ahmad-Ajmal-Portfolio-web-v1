@@ -5,7 +5,7 @@ const DEFAULT_DATA = {
     title: "Software Engineer & Designer",
     email: "ahmad@example.com",
     bio: "I am a passionate software engineer and designer who builds premium, high-performance web experiences. Combining technical excellence with beautiful editorial design to create digital products that stand out.",
-    photo: "assets/profile.jpg"
+    photo: ""
   },
   skills: [
     { name: "Game Development", percent: 95 },
@@ -30,6 +30,25 @@ const DEFAULT_DATA = {
   bhai: []
 };
 
+// Firestore subcollections do not preserve the order in which documents were
+// written. Keep project ordering explicit so the admin's chosen order is used
+// consistently on every page and after a reload.
+function sortProjectsByOrder(projects) {
+  return [...(projects || [])]
+    .map((project, originalIndex) => ({ project, originalIndex }))
+    .sort((a, b) => {
+      const aOrder = Number(a.project.order);
+      const bOrder = Number(b.project.order);
+      const aHasOrder = Number.isFinite(aOrder);
+      const bHasOrder = Number.isFinite(bOrder);
+
+      if (aHasOrder && bHasOrder && aOrder !== bOrder) return aOrder - bOrder;
+      if (aHasOrder !== bHasOrder) return aHasOrder ? -1 : 1;
+      return a.originalIndex - b.originalIndex;
+    })
+    .map(({ project }) => project);
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyADPThr4D0RvCJnJipz0lkCrdfGPyl8Am4",
   authDomain: "ahmad-ajmal-portfolio-v1.firebaseapp.com",
@@ -41,9 +60,13 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let db;
-if (typeof firebase !== 'undefined') {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
+try {
+  if (typeof firebase !== 'undefined') {
+    if (!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+  }
+} catch (error) {
+  console.error('Firebase initialization failed:', error);
 }
 
 function initStorage() {
@@ -51,48 +74,79 @@ function initStorage() {
 }
 
 // Theme Management
+const PORTFOLIO_THEMES = ['dark', 'light', 'maroon', 'ocean', 'forest'];
+const THEME_STORAGE_KEY = 'poetfolio_theme';
+
+function readSavedTheme() {
+  try {
+    const theme = localStorage.getItem(THEME_STORAGE_KEY);
+    return PORTFOLIO_THEMES.includes(theme) ? theme : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveThemePreference(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (error) {
+    // Keep the selected theme active even when browser storage is unavailable.
+  }
+}
+
+function applyTheme(theme) {
+  const nextTheme = PORTFOLIO_THEMES.includes(theme) ? theme : 'dark';
+  document.documentElement.dataset.theme = nextTheme;
+
+  // Preserve temporary body state classes used by modals, games and effects.
+  if (document.body) {
+    document.body.classList.remove(...PORTFOLIO_THEMES);
+    document.body.classList.add(nextTheme);
+  }
+
+  updateThemeIcon(document.querySelector('#themeToggle .theme-icon'), nextTheme);
+  return nextTheme;
+}
+
 function initTheme() {
   const toggleBtn = document.getElementById('themeToggle');
-  const icon = toggleBtn?.querySelector('.theme-icon');
-  
-  // 1. Initial load from local storage
-  let currentTheme = localStorage.getItem('poetfolio_theme') || 'dark';
-  document.body.className = currentTheme;
-  updateThemeIcon(icon, currentTheme);
+  const savedTheme = readSavedTheme();
+  applyTheme(savedTheme || document.documentElement.dataset.theme || 'dark');
 
-  // 2. Fetch global setting from Firebase
-  if (db) {
+  // The Firebase setting is only the default for visitors who have not chosen
+  // a theme. A personal choice always wins across every page.
+  if (!savedTheme && db) {
     db.collection('portfolio').doc('settings').get().then(doc => {
-      if (doc.exists && doc.data().theme) {
-        const globalTheme = doc.data().theme;
-        if (globalTheme !== currentTheme) {
-          currentTheme = globalTheme;
-          document.body.className = currentTheme;
-          localStorage.setItem('poetfolio_theme', currentTheme);
-          updateThemeIcon(icon, currentTheme);
-        }
+      const globalTheme = doc.exists ? doc.data().theme : null;
+
+      // The visitor may have clicked the toggle while Firebase was loading.
+      if (!readSavedTheme() && PORTFOLIO_THEMES.includes(globalTheme)) {
+        applyTheme(globalTheme);
       }
-    }).catch(err => console.log('Error loading global theme:', err));
+    }).catch(err => console.warn('Unable to load the default theme:', err));
   }
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
-      const isDark = document.body.classList.contains('dark');
-      const newTheme = isDark ? 'light' : 'dark';
-      
-      document.body.className = newTheme;
-      localStorage.setItem('poetfolio_theme', newTheme);
-      updateThemeIcon(icon, newTheme);
+      const currentTheme = document.documentElement.dataset.theme || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+      saveThemePreference(newTheme);
+      applyTheme(newTheme);
     });
   }
 }
 
 function updateThemeIcon(iconEl, theme) {
   if (!iconEl) return;
-  // Moon for dark mode (to switch to light), Sun for light mode (to switch to dark)
-  iconEl.innerHTML = theme === 'dark' 
-    ? '☀️' // current is dark, show sun to toggle light
-    : '🌙'; // current is light, show moon to toggle dark
+  const willSwitchToDark = theme === 'light';
+  iconEl.textContent = willSwitchToDark ? '🌙' : '☀️';
+
+  const button = iconEl.closest('button');
+  if (button) {
+    button.title = willSwitchToDark ? 'Switch to dark theme' : 'Switch to light theme';
+    button.setAttribute('aria-label', button.title);
+  }
 }
 
 // Admin Modal Logic
@@ -143,6 +197,18 @@ function initAdminModal() {
 // Scroll Reveal Animation
 function initScrollReveal() {
   const elements = document.querySelectorAll('.reveal');
+
+  if (!('IntersectionObserver' in window)) {
+    elements.forEach(element => {
+      element.classList.add('revealed');
+      if (element.classList.contains('skill-item')) {
+        element.classList.add('animated');
+        const bar = element.querySelector('.skill-fill');
+        if (bar) bar.style.width = (bar.getAttribute('data-percent') || 0) + '%';
+      }
+    });
+    return;
+  }
   
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -203,6 +269,84 @@ function showToast(message, type = 'success') {
   setTimeout(() => {
     toast.classList.remove('show');
   }, 3000);
+}
+
+// A short, soft two-note pop generated in the browser. Using Web Audio keeps
+// the effect instant and avoids an extra sound file on every page load.
+let interfaceAudioContext;
+let lastInterfaceSoundAt = 0;
+
+function playInterfaceClickSound() {
+  const nowMs = performance.now();
+  if (nowMs - lastInterfaceSoundAt < 45) return;
+  lastInterfaceSoundAt = nowMs;
+
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    if (!interfaceAudioContext) interfaceAudioContext = new AudioContextClass();
+
+    const playNotes = () => {
+      const now = interfaceAudioContext.currentTime;
+      const master = interfaceAudioContext.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.04, now + 0.008);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+      master.connect(interfaceAudioContext.destination);
+
+      const pop = interfaceAudioContext.createOscillator();
+      pop.type = 'sine';
+      pop.frequency.setValueAtTime(620, now);
+      pop.frequency.exponentialRampToValueAtTime(880, now + 0.07);
+      pop.connect(master);
+      pop.start(now);
+      pop.stop(now + 0.11);
+
+      const sparkle = interfaceAudioContext.createOscillator();
+      const sparkleGain = interfaceAudioContext.createGain();
+      sparkle.type = 'triangle';
+      sparkle.frequency.setValueAtTime(1240, now + 0.025);
+      sparkleGain.gain.setValueAtTime(0.22, now + 0.025);
+      sparkleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+      sparkle.connect(sparkleGain);
+      sparkleGain.connect(master);
+      sparkle.start(now + 0.025);
+      sparkle.stop(now + 0.09);
+    };
+
+    if (interfaceAudioContext.state === 'suspended') {
+      interfaceAudioContext.resume().then(playNotes).catch(() => {});
+    } else {
+      playNotes();
+    }
+  } catch (error) {
+    // Audio may be blocked by browser or device settings; interaction continues.
+  }
+}
+
+function initInterfaceClickSound() {
+  let pointerStart = null;
+
+  document.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    pointerStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  }, { passive: true });
+
+  document.addEventListener('pointerup', event => {
+    if (!pointerStart || pointerStart.id !== event.pointerId) return;
+    const moved = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
+    pointerStart = null;
+    if (moved <= 10) playInterfaceClickSound();
+  }, { passive: true });
+
+  document.addEventListener('pointercancel', () => {
+    pointerStart = null;
+  }, { passive: true });
+
+  // Keyboard-activated buttons and links also deserve the same feedback.
+  document.addEventListener('click', event => {
+    if (event.detail === 0) playInterfaceClickSound();
+  });
 }
 
 // Click Sparkle Effect
@@ -431,7 +575,7 @@ function startBlackoutSequence() {
 }
 
 function initCursorGlow() {
-  if (window.innerWidth <= 768) return;
+  if (window.innerWidth <= 768 || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
   document.body.classList.add('custom-cursor');
 
   const cursor = document.createElement('div');
@@ -482,7 +626,7 @@ function initCursorGlow() {
   }
   animateTrail();
 
-  const interactive = 'a, button, .project-card, .btn-primary, .btn-secondary, input, textarea, select, .golden-zone';
+  const interactive = 'a, button, .project-card, .btn-primary, .btn-secondary, input, textarea, select';
   document.addEventListener('mouseover', (e) => {
     if (e.target.closest(interactive)) cursor.classList.add('enlarged');
   });
@@ -507,6 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Small delay for scroll reveal to ensure layout is ready
   setTimeout(initScrollReveal, 100);
   initClickSparkles();
+  initInterfaceClickSound();
   initNoiseOverlay();
   initCursorGlow();
   initKillBtn();

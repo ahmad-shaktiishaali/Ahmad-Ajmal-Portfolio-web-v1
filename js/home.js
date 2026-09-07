@@ -12,15 +12,15 @@ function projectsCollection() {
 async function loadProjectsFromFirebase() {
   const snapshot = await projectsCollection().get();
   if (!snapshot.empty) {
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return sortProjectsByOrder(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }
 
   const legacyDoc = await db.collection('portfolio').doc('projects').get();
   if (legacyDoc.exists && legacyDoc.data().items) {
-    return legacyDoc.data().items;
+    return sortProjectsByOrder(legacyDoc.data().items);
   }
 
-  return DEFAULT_DATA.projects || [];
+  return sortProjectsByOrder(DEFAULT_DATA.projects || []);
 }
 
 function escapeHtml(value) {
@@ -132,10 +132,7 @@ async function loadHomeData() {
 
   // Render Bhai Log
   renderBhaiLog();
-  
-  // Golden Touch Interactive
-  initGoldenTouch();
-  
+
   setTimeout(initScrollReveal, 100);
   hidePreloader();
 }
@@ -181,98 +178,6 @@ function renderFeaturedProjects(projects) {
       </a>
     `;
   }).join('');
-}
-
-let audioCtx;
-
-function playGoldenSound() {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const now = audioCtx.currentTime;
-
-    // Main chime tone
-    const osc1 = audioCtx.createOscillator();
-    const gain1 = audioCtx.createGain();
-    osc1.connect(gain1);
-    gain1.connect(audioCtx.destination);
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(1318, now);
-    osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.06);
-    gain1.gain.setValueAtTime(0.14, now);
-    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
-    osc1.start(now);
-    osc1.stop(now + 0.55);
-
-    // Harmonic fifth (richer)
-    const osc2 = audioCtx.createOscillator();
-    const gain2 = audioCtx.createGain();
-    osc2.connect(gain2);
-    gain2.connect(audioCtx.destination);
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(1976, now);
-    gain2.gain.setValueAtTime(0.06, now);
-    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-    osc2.start(now);
-    osc2.stop(now + 0.35);
-
-    // Bright sparkle overtone
-    const osc3 = audioCtx.createOscillator();
-    const gain3 = audioCtx.createGain();
-    osc3.connect(gain3);
-    gain3.connect(audioCtx.destination);
-    osc3.type = 'sine';
-    osc3.frequency.setValueAtTime(2636, now);
-    gain3.gain.setValueAtTime(0.03, now);
-    gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-    osc3.start(now);
-    osc3.stop(now + 0.15);
-  } catch (e) {}
-}
-
-function initGoldenTouch() {
-  const zone = document.getElementById('goldenZone');
-  const counter = document.getElementById('goldCounter');
-  if (!zone || !counter) return;
-
-  let count = 0;
-
-  function handleTap(e) {
-    const rect = zone.getBoundingClientRect();
-    const x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
-    const y = (e.clientY || e.touches?.[0]?.clientY || 0) - rect.top;
-
-    playGoldenSound();
-    count++;
-    counter.textContent = count;
-    counter.style.transform = 'scale(1.3)';
-    setTimeout(() => { counter.style.transform = 'scale(1)'; }, 200);
-
-    // Ripple
-    const ripple = document.createElement('div');
-    ripple.className = 'golden-ripple';
-    ripple.style.left = x + 'px';
-    ripple.style.top = y + 'px';
-    zone.appendChild(ripple);
-    ripple.addEventListener('animationend', () => ripple.remove());
-
-    // Particles
-    for (let i = 0; i < 6; i++) {
-      const p = document.createElement('div');
-      p.className = 'golden-particle';
-      const angle = (Math.PI * 2 / 6) * i + (Math.random() - 0.5) * 0.5;
-      const dist = 40 + Math.random() * 50;
-      p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
-      p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
-      p.style.left = x + 'px';
-      p.style.top = y + 'px';
-      zone.appendChild(p);
-      p.addEventListener('animationend', () => p.remove());
-    }
-  }
-
-  zone.addEventListener('click', handleTap);
-  zone.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); }, { passive: false });
 }
 
 function renderBhaiLog() {

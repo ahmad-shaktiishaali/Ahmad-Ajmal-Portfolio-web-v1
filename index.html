@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portfolio | Home</title>
   <link rel="icon" type="image/png" href="assets/favicon.png">
+  <script src="js/theme-init.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="dark">
@@ -55,7 +56,7 @@
         <div class="hero-photo-container reveal reveal-delay-1">
           <div class="hero-photo-frame">
             <!-- Image source populated via JS -->
-            <img src="assets/profile.jpg" alt="Profile" class="hero-photo" id="heroPhoto" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%23c8a951\\\' fill-opacity=\\\'0.2\\\'/%3E%3C/svg%3E'">
+            <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23c8a951%22 fill-opacity=%220.2%22/%3E%3C/svg%3E" alt="Profile" class="hero-photo" id="heroPhoto" onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%25%22 height=%22100%25%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23c8a951%22 fill-opacity=%220.2%22/%3E%3C/svg%3E'">
           </div>
         </div>
         
@@ -118,15 +119,43 @@
         </div>
       </section>
 
-      <!-- Golden Touch Section -->
-      <section class="section" id="goldenTouch">
-        <span class="section-label reveal">Play</span>
-        <h2 class="section-title reveal">Golden Touch</h2>
-        <p class="section-subtitle reveal">Tap anywhere to collect gold. Every touch counts.</p>
-        
-        <div class="golden-zone reveal reveal-delay-2" id="goldenZone">
-          <div class="golden-counter" id="goldCounter">0</div>
-          <div class="golden-label"><span id="goldUnit">gold</span> collected</div>
+      <!-- Services / Collaboration Section -->
+      <section class="section" id="workWithMe">
+        <div class="collaboration-panel reveal">
+          <div class="collaboration-intro">
+            <span class="section-label">Collaboration</span>
+            <div class="availability-status"><span aria-hidden="true"></span> Open to opportunities</div>
+            <h2 class="section-title">What I Can Build With You</h2>
+            <p>I combine development and design to turn ideas into polished, playable and memorable digital experiences.</p>
+            <div class="collaboration-actions">
+              <a href="contact.html" class="btn-primary">Start a Conversation <span>→</span></a>
+              <a href="work.html" class="btn-secondary">See Project Results</a>
+            </div>
+          </div>
+
+          <div class="service-list" aria-label="Services">
+            <article class="service-item">
+              <span class="service-number">01</span>
+              <div>
+                <h3>Game Development</h3>
+                <p>Gameplay systems, prototypes and complete mobile or PC experiences.</p>
+              </div>
+            </article>
+            <article class="service-item">
+              <span class="service-number">02</span>
+              <div>
+                <h3>Interactive Web</h3>
+                <p>Fast, responsive websites with thoughtful motion and clear user journeys.</p>
+              </div>
+            </article>
+            <article class="service-item">
+              <span class="service-number">03</span>
+              <div>
+                <h3>Design & Direction</h3>
+                <p>UI, game and level design that gives each project a focused identity.</p>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
 

@@ -21,18 +21,23 @@ function projectsCollection() {
 async function loadProjectsFromFirebase() {
   const snapshot = await projectsCollection().get();
   if (!snapshot.empty) {
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return sortProjectsByOrder(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }
 
   const legacyDoc = await db.collection('portfolio').doc('projects').get();
   if (legacyDoc.exists && legacyDoc.data().items) {
-    return legacyDoc.data().items;
+    return sortProjectsByOrder(legacyDoc.data().items);
   }
 
-  return DEFAULT_DATA.projects;
+  return sortProjectsByOrder(DEFAULT_DATA.projects);
 }
 
 async function saveAllProjectsToFirebase() {
+  projectsData = projectsData.map((project, index) => ({
+    ...project,
+    order: index
+  }));
+
   const batch = db.batch();
   const collectionRef = projectsCollection();
   const existingSnapshot = await collectionRef.get();
@@ -132,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initTabs();
+  initProjectReordering();
   loadAllData();
   
   // Initialize Forms
@@ -332,8 +338,12 @@ function renderProjectsList() {
   projectsData.forEach((project, index) => {
     const thumb = (project.images && project.images.length > 0) ? project.images[0] : '';
     html += `
-      <div class="admin-list-item" draggable="true" data-index="${index}">
-        <span class="admin-drag-handle">⠿</span>
+      <div class="admin-list-item" data-project-id="${project.id}">
+        <span class="admin-drag-handle" draggable="true" title="Drag to reorder" aria-label="Drag project to reorder">⠿</span>
+        <div class="admin-order-controls" aria-label="Change project position">
+          <button type="button" class="admin-order-btn" onclick="moveProject('${project.id}', -1)" aria-label="Move project up" title="Move up" ${index === 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" class="admin-order-btn" onclick="moveProject('${project.id}', 1)" aria-label="Move project down" title="Move down" ${index === projectsData.length - 1 ? 'disabled' : ''}>↓</button>
+        </div>
         ${thumb ? `<img src="${thumb}" class="admin-list-thumb">` : `<div class="admin-list-thumb" style="background: var(--bg-primary);"></div>`}
         <div class="admin-list-info">
           <div class="admin-list-title" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -352,23 +362,34 @@ function renderProjectsList() {
   list.innerHTML = html;
 }
 
-function initDragAndDrop() {
+function initProjectReordering() {
   const list = document.getElementById('adminProjectsList');
   let draggedItem = null;
+  let dropHandled = false;
 
   list.addEventListener('dragstart', (e) => {
-    const item = e.target.closest('.admin-list-item');
-    if (!item) return;
+    const handle = e.target.closest('.admin-drag-handle');
+    const item = handle?.closest('.admin-list-item');
+    if (!handle || !item) {
+      e.preventDefault();
+      return;
+    }
+
     draggedItem = item;
+    dropHandled = false;
     item.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', item.dataset.index);
+    e.dataTransfer.setData('text/plain', item.dataset.projectId);
   });
 
-  list.addEventListener('dragend', (e) => {
-    const item = e.target.closest('.admin-list-item');
-    if (item) item.classList.remove('dragging');
-    document.querySelectorAll('.admin-list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+  list.addEventListener('dragend', () => {
+    draggedItem?.classList.remove('dragging');
+    list.querySelectorAll('.admin-list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+    // Dragging can rearrange the DOM before the pointer is released. Restore
+    // the saved order when the item was released outside this list.
+    if (!dropHandled) renderProjectsList();
+    draggedItem = null;
   });
 
   list.addEventListener('dragover', (e) => {
@@ -376,6 +397,9 @@ function initDragAndDrop() {
     e.dataTransfer.dropEffect = 'move';
     const target = e.target.closest('.admin-list-item');
     if (!target || target === draggedItem) return;
+    list.querySelectorAll('.admin-list-item.drag-over').forEach(el => {
+      if (el !== target) el.classList.remove('drag-over');
+    });
     const rect = target.getBoundingClientRect();
     const midY = rect.top + rect.height / 2;
     if (e.clientY < midY) {
@@ -387,17 +411,59 @@ function initDragAndDrop() {
     }
   });
 
-  list.addEventListener('drop', (e) => {
+  list.addEventListener('drop', async (e) => {
     e.preventDefault();
-    document.querySelectorAll('.admin-list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    list.querySelectorAll('.admin-list-item.drag-over').forEach(el => el.classList.remove('drag-over'));
     if (!draggedItem) return;
+
+    dropHandled = true;
     const items = [...list.querySelectorAll('.admin-list-item')];
-    const newOrder = items.map(item => projectsData[parseInt(item.dataset.index)]);
-    projectsData = newOrder;
-    renderProjectsList();
-    saveAllProjectsToFirebase();
+    const projectsById = new Map(projectsData.map(project => [String(project.id), project]));
+    const newOrder = items.map(item => projectsById.get(item.dataset.projectId)).filter(Boolean);
+
+    await updateProjectOrder(newOrder);
   });
 }
+
+async function updateProjectOrder(newOrder) {
+  const oldOrder = projectsData;
+  const hasChanged = newOrder.some((project, index) => project !== oldOrder[index]);
+
+  if (!hasChanged) {
+    renderProjectsList();
+    return;
+  }
+
+  projectsData = newOrder.map((project, index) => ({ ...project, order: index }));
+  renderProjectsList();
+
+  if (!db) {
+    showToast('Project order updated for this session.');
+    return;
+  }
+
+  try {
+    showLoading();
+    await saveAllProjectsToFirebase();
+    showToast('Project order saved!');
+  } catch (err) {
+    projectsData = oldOrder;
+    renderProjectsList();
+    alert('Error saving project order: ' + err.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+window.moveProject = async function(id, direction) {
+  const currentIndex = projectsData.findIndex(project => String(project.id) === String(id));
+  const targetIndex = currentIndex + direction;
+  if (currentIndex < 0 || targetIndex < 0 || targetIndex >= projectsData.length) return;
+
+  const newOrder = [...projectsData];
+  [newOrder[currentIndex], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[currentIndex]];
+  await updateProjectOrder(newOrder);
+};
 
 function initProjectForm() {
   const fileInput = document.getElementById('projectFileInput');
@@ -1105,7 +1171,7 @@ function initSettingsForm() {
       selectedGlobalTheme = theme;
       
       // Preview it locally
-      document.body.className = theme;
+      applyTheme(theme);
       
       updateActiveThemeBtn(theme);
     });

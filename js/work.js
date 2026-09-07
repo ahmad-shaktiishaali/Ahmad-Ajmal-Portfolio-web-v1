@@ -15,12 +15,12 @@ function projectsCollection() {
 async function loadProjectsFromFirebase() {
   const snapshot = await projectsCollection().get();
   if (!snapshot.empty) {
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return sortProjectsByOrder(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }
 
   const legacyDoc = await db.collection('portfolio').doc('projects').get();
   if (legacyDoc.exists && legacyDoc.data().items) {
-    return legacyDoc.data().items;
+    return sortProjectsByOrder(legacyDoc.data().items);
   }
 
   return [];
