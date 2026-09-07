@@ -271,8 +271,8 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
-// A short, soft two-note pop generated in the browser. Using Web Audio keeps
-// the effect instant and avoids an extra sound file on every page load.
+// A tiny bubble-and-sparkle chime generated in the browser. Using Web Audio
+// keeps the response instant and avoids loading a sound file on every page.
 let interfaceAudioContext;
 let lastInterfaceSoundAt = 0;
 
@@ -289,29 +289,43 @@ function playInterfaceClickSound() {
     const playNotes = () => {
       const now = interfaceAudioContext.currentTime;
       const master = interfaceAudioContext.createGain();
+      const softener = interfaceAudioContext.createBiquadFilter();
+      softener.type = 'lowpass';
+      softener.frequency.setValueAtTime(2800, now);
+      softener.Q.setValueAtTime(0.7, now);
+
       master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.04, now + 0.008);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
-      master.connect(interfaceAudioContext.destination);
+      master.gain.exponentialRampToValueAtTime(0.045, now + 0.008);
+      master.gain.exponentialRampToValueAtTime(0.018, now + 0.1);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      master.connect(softener);
+      softener.connect(interfaceAudioContext.destination);
 
-      const pop = interfaceAudioContext.createOscillator();
-      pop.type = 'sine';
-      pop.frequency.setValueAtTime(620, now);
-      pop.frequency.exponentialRampToValueAtTime(880, now + 0.07);
-      pop.connect(master);
-      pop.start(now);
-      pop.stop(now + 0.11);
+      const bubble = interfaceAudioContext.createOscillator();
+      bubble.type = 'sine';
+      bubble.frequency.setValueAtTime(520, now);
+      bubble.frequency.exponentialRampToValueAtTime(760, now + 0.085);
+      bubble.connect(master);
+      bubble.start(now);
+      bubble.stop(now + 0.13);
 
-      const sparkle = interfaceAudioContext.createOscillator();
-      const sparkleGain = interfaceAudioContext.createGain();
-      sparkle.type = 'triangle';
-      sparkle.frequency.setValueAtTime(1240, now + 0.025);
-      sparkleGain.gain.setValueAtTime(0.22, now + 0.025);
-      sparkleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-      sparkle.connect(sparkleGain);
-      sparkleGain.connect(master);
-      sparkle.start(now + 0.025);
-      sparkle.stop(now + 0.09);
+      [
+        { frequency: 988, start: 0.045, duration: 0.09, volume: 0.24 },
+        { frequency: 1319, start: 0.105, duration: 0.105, volume: 0.18 }
+      ].forEach((note, index) => {
+        const sparkle = interfaceAudioContext.createOscillator();
+        const sparkleGain = interfaceAudioContext.createGain();
+        const startsAt = now + note.start;
+        sparkle.type = index === 0 ? 'sine' : 'triangle';
+        sparkle.frequency.setValueAtTime(note.frequency, startsAt);
+        sparkleGain.gain.setValueAtTime(0.0001, startsAt);
+        sparkleGain.gain.exponentialRampToValueAtTime(note.volume, startsAt + 0.008);
+        sparkleGain.gain.exponentialRampToValueAtTime(0.0001, startsAt + note.duration);
+        sparkle.connect(sparkleGain);
+        sparkleGain.connect(master);
+        sparkle.start(startsAt);
+        sparkle.stop(startsAt + note.duration);
+      });
     };
 
     if (interfaceAudioContext.state === 'suspended') {
