@@ -715,6 +715,16 @@ h1, h2, h3, h4, h5 {
   filter: blur(10px);
 }
 
+.hero-stat-line:first-child {
+  filter: none;
+}
+
+.hero-stat-line:first-child::before,
+.hero-stat-line:first-child::after {
+  content: none;
+  animation: none;
+}
+
 .hero-stat-line:nth-child(2) {
   animation-delay: 0.35s;
 }
