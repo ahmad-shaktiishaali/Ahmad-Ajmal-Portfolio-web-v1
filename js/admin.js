@@ -9,7 +9,8 @@ let bhaiData = [];
 // Working state for images
 let currentProjectImages = [];
 let currentAchievementImage = null;
-let currentProfileImage = null;
+let currentProfileDarkImage = null;
+let currentProfileLightImage = null;
 
 const PROJECT_IMAGE_MAX_SIDE = 720;
 const PROJECT_IMAGE_MAX_DATA_URL_LENGTH = 140000;
@@ -263,14 +264,25 @@ async function loadAllData() {
 /* ================= PROFILE LOGIC ================= */
 function initProfileForm() {
   const form = document.getElementById('profileForm');
-  const photoInput = document.getElementById('profilePhotoInput');
+  const darkPhotoInput = document.getElementById('profileDarkPhotoInput');
+  const lightPhotoInput = document.getElementById('profileLightPhotoInput');
   
-  photoInput.addEventListener('change', (e) => {
+  darkPhotoInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
       compressImage(file, (compressedData) => {
-        currentProfileImage = compressedData;
-        updateProfilePhotoPreview(currentProfileImage);
+        currentProfileDarkImage = compressedData;
+        updateProfilePhotoPreview('dark', currentProfileDarkImage);
+      });
+    }
+  });
+
+  lightPhotoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      compressImage(file, (compressedData) => {
+        currentProfileLightImage = compressedData;
+        updateProfilePhotoPreview('light', currentProfileLightImage);
       });
     }
   });
@@ -283,8 +295,11 @@ function initProfileForm() {
     profileData.title = document.getElementById('profileTitle').value;
     profileData.bio = document.getElementById('profileBio').value;
     
-    if (currentProfileImage) {
-      profileData.photo = currentProfileImage;
+    if (currentProfileDarkImage) {
+      profileData.photo = currentProfileDarkImage;
+    }
+    if (currentProfileLightImage) {
+      profileData.photoLight = currentProfileLightImage;
     }
     
     try {
@@ -305,15 +320,16 @@ function populateProfileForm() {
   document.getElementById('profileTitle').value = profileData.title || '';
   document.getElementById('profileBio').value = profileData.bio || '';
   
-  if (profileData.photo) {
-    currentProfileImage = profileData.photo;
-    updateProfilePhotoPreview(currentProfileImage);
-  }
+  currentProfileDarkImage = profileData.photo || '';
+  currentProfileLightImage = profileData.photoLight || DEFAULT_DATA.profile.photoLight || '';
+  updateProfilePhotoPreview('dark', currentProfileDarkImage);
+  updateProfilePhotoPreview('light', currentProfileLightImage);
 }
 
-function updateProfilePhotoPreview(src) {
-  const preview = document.getElementById('adminPhotoPreview');
-  const placeholder = document.getElementById('adminPhotoPlaceholder');
+function updateProfilePhotoPreview(theme, src) {
+  const isLight = theme === 'light';
+  const preview = document.getElementById(isLight ? 'adminLightPhotoPreview' : 'adminDarkPhotoPreview');
+  const placeholder = document.getElementById(isLight ? 'adminLightPhotoPlaceholder' : 'adminDarkPhotoPlaceholder');
   
   if (src) {
     preview.src = src;

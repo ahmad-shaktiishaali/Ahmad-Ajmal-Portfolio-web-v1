@@ -5,7 +5,8 @@ const DEFAULT_DATA = {
     title: "Software Engineer & Designer",
     email: "ahmad@example.com",
     bio: "I am a passionate software engineer and designer who builds premium, high-performance web experiences. Combining technical excellence with beautiful editorial design to create digital products that stand out.",
-    photo: ""
+    photo: "",
+    photoLight: "assets/ahmad-ajmal-light.jpg"
   },
   skills: [
     { name: "Game Development", percent: 95 },
@@ -105,6 +106,9 @@ function applyTheme(theme) {
   }
 
   updateThemeIcon(document.querySelector('#themeToggle .theme-icon'), nextTheme);
+  document.dispatchEvent(new CustomEvent('portfolio:themechange', {
+    detail: { theme: nextTheme }
+  }));
   return nextTheme;
 }
 

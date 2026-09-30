@@ -5,6 +5,25 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
+let homeProfilePhotos = null;
+
+function updateHomeProfilePhoto(theme = document.documentElement.dataset.theme || 'dark') {
+  if (!homeProfilePhotos) return;
+
+  const heroPhoto = document.getElementById('heroPhoto');
+  if (!heroPhoto) return;
+
+  const nextPhoto = theme === 'light'
+    ? homeProfilePhotos.light
+    : homeProfilePhotos.dark;
+
+  if (nextPhoto) heroPhoto.src = nextPhoto;
+}
+
+document.addEventListener('portfolio:themechange', (event) => {
+  updateHomeProfilePhoto(event.detail?.theme);
+});
+
 function projectsCollection() {
   return db.collection('portfolio').doc('projects').collection('items');
 }
@@ -83,9 +102,13 @@ async function loadHomeData() {
     heroEmail.textContent = profile.email;
     heroEmail.href = `mailto:${profile.email}`;
     document.getElementById('heroBio').textContent = profile.bio;
-    if (profile.photo) {
-      document.getElementById('heroPhoto').src = profile.photo;
-    }
+    const currentPhoto = document.getElementById('heroPhoto').src;
+    const darkPhoto = profile.photo || currentPhoto;
+    homeProfilePhotos = {
+      dark: darkPhoto,
+      light: profile.photoLight || DEFAULT_DATA.profile.photoLight || darkPhoto
+    };
+    updateHomeProfilePhoto();
   } catch (e) { console.error(e); }
 
   renderFeaturedProjects(featuredProjects);

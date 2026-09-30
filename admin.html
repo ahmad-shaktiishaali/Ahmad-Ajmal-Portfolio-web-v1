@@ -47,17 +47,35 @@
         <p class="admin-section-desc">Update your personal information displayed on the home page.</p>
         
         <form id="profileForm">
-          <div class="admin-photo-section">
-            <div id="adminPhotoPreviewContainer">
-              <div class="admin-photo-placeholder" id="adminPhotoPlaceholder">📸</div>
-              <img src="" alt="Profile Preview" class="admin-photo-preview" id="adminPhotoPreview" style="display: none;">
+          <div class="admin-theme-photo-grid">
+            <div class="admin-photo-section">
+              <div>
+                <div class="admin-photo-placeholder" id="adminDarkPhotoPlaceholder">🌙</div>
+                <img src="" alt="Dark theme profile preview" class="admin-photo-preview" id="adminDarkPhotoPreview" style="display: none;">
+              </div>
+              <div>
+                <p class="form-label">Dark Theme Photo</p>
+                <label class="btn-secondary">
+                  Upload Dark Photo
+                  <input type="file" id="profileDarkPhotoInput" accept="image/*" style="display: none;">
+                </label>
+                <p class="admin-photo-help">Also used by Maroon, Ocean and Forest themes.</p>
+              </div>
             </div>
-            <div>
-              <label class="btn-secondary">
-                Upload New Photo
-                <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;">
-              </label>
-              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Recommended: Vertical aspect ratio (4:5).</p>
+
+            <div class="admin-photo-section">
+              <div>
+                <div class="admin-photo-placeholder" id="adminLightPhotoPlaceholder">☀️</div>
+                <img src="" alt="Light theme profile preview" class="admin-photo-preview" id="adminLightPhotoPreview" style="display: none;">
+              </div>
+              <div>
+                <p class="form-label">Light Theme Photo</p>
+                <label class="btn-secondary">
+                  Upload Light Photo
+                  <input type="file" id="profileLightPhotoInput" accept="image/*" style="display: none;">
+                </label>
+                <p class="admin-photo-help">Recommended: Vertical aspect ratio (4:5).</p>
+              </div>
             </div>
           </div>
 
