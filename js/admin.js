@@ -732,16 +732,15 @@ function initAchievementForm() {
       image: currentAchievementImage
     };
     
-    if (isNew) {
-      achievementsData.push(achievement);
-    } else {
-      const index = achievementsData.findIndex(a => a.id === id);
-      if (index !== -1) achievementsData[index] = achievement;
-    }
+    const nextAchievements = isNew
+      ? [...achievementsData, achievement]
+      : achievementsData.map(item => item.id === id ? achievement : item);
     
     try {
       showLoading();
-      if (db) await db.collection('portfolio').doc('achievements').set({ items: achievementsData });
+      if (!db) throw new Error('Unable to connect. Please reload and try saving again.');
+      await db.collection('portfolio').doc('achievements').set({ items: nextAchievements });
+      achievementsData = nextAchievements;
       hideLoading();
       showToast(isNew ? 'Achievement created!' : 'Achievement updated!');
       renderAchievementsList();
@@ -817,9 +816,11 @@ window.editAchievement = function(id) {
 
 window.deleteAchievement = async function(id) {
   if (confirm("Are you sure you want to delete this achievement?")) {
-    achievementsData = achievementsData.filter(a => a.id !== id);
+    const nextAchievements = achievementsData.filter(a => a.id !== id);
     try {
-      if (db) await db.collection('portfolio').doc('achievements').set({ items: achievementsData });
+      if (!db) throw new Error('Unable to connect. Please reload and try again.');
+      await db.collection('portfolio').doc('achievements').set({ items: nextAchievements });
+      achievementsData = nextAchievements;
       renderAchievementsList();
       showToast('Achievement deleted', 'error');
     } catch(err) {

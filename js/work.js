@@ -8,108 +8,77 @@ let projectsLoadingStartedAt = 0;
 let projectsLoadingTimer = null;
 let projectOverlayOpen = false;
 let projectCardObserver = null;
-let resetProjectWater = () => {};
+let resetProjectMagnification = () => {};
 
-function initProjectWaterInteraction() {
+function initProjectMagnification() {
   const grid = document.getElementById('projectsGrid');
   if (!grid) return;
 
   const motion = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
-  const ripples = new Set();
-  const bobs = new Map();
   let frame = 0;
   let pointer = null;
-  let hoveredCard = null;
-  let lastWave = { x: 0, y: 0, time: -Infinity };
 
-  const settle = () => {
-    grid.querySelectorAll('.project-card').forEach(card => {
-      card.style.removeProperty('--water-near');
-    });
-    hoveredCard = null;
-  };
-
-  resetProjectWater = () => {
+  resetProjectMagnification = () => {
     cancelAnimationFrame(frame);
     frame = 0;
     pointer = null;
-    lastWave.time = -Infinity;
-    settle();
-    ripples.forEach(ripple => ripple.remove());
-    ripples.clear();
-    bobs.forEach(animation => animation.cancel());
-    bobs.clear();
+    grid.querySelectorAll('.project-card').forEach(card => {
+      ['--project-zoom', '--project-shift-x', '--project-shift-y', '--project-origin-x', '--project-origin-y'].forEach(property => card.style.removeProperty(property));
+      card.classList.remove('is-magnified', 'is-pointer-focused');
+    });
   };
 
-  const updateWater = () => {
+  const updateMagnification = () => {
     frame = 0;
     if (!pointer || !motion.matches || projectOverlayOpen) return;
     const { x, y, card: activeCard } = pointer;
-    const now = performance.now();
-    const entering = activeCard && activeCard !== hoveredCard;
-    const moving = Math.hypot(x - lastWave.x, y - lastWave.y) > 90;
-    const emitWave = activeCard && (entering || moving) && now - lastWave.time > 550;
-    hoveredCard = activeCard;
+    const gridRect = grid.getBoundingClientRect();
 
     grid.querySelectorAll('.project-card').forEach(card => {
-      const rect = card.getBoundingClientRect();
-      const localX = x - rect.left;
-      const localY = y - rect.top;
-      // Distance to the card edge lets a wave reach adjacent cards, including
-      // tall portrait cards, without relying on their grid index or center.
+      // Read the resting layout, not the zoomed bounds, to avoid feedback and
+      // jitter while the card grows under the pointer.
+      const left = gridRect.left + card.offsetLeft;
+      const top = gridRect.top + card.offsetTop;
+      const width = card.offsetWidth;
+      const height = card.offsetHeight;
+      const localX = Math.max(0, Math.min(1, (x - left) / width));
+      const localY = Math.max(0, Math.min(1, (y - top) / height));
       const distance = Math.hypot(
-        Math.max(rect.left - x, 0, x - rect.right),
-        Math.max(rect.top - y, 0, y - rect.bottom)
+        Math.max(left - x, 0, x - left - width),
+        Math.max(top - y, 0, y - top - height)
       );
-      card.style.setProperty('--water-x', `${localX}px`);
-      card.style.setProperty('--water-y', `${localY}px`);
-      card.style.setProperty('--water-near', String(Math.max(0, 1 - distance / 300)));
+      const proximity = Math.max(0, 1 - distance / 260);
+      const influence = proximity * proximity * (3 - 2 * proximity);
+      const focused = card === activeCard;
+      const centerDistance = Math.min(1, Math.hypot(localX - 0.5, localY - 0.5) * 2);
+      const zoom = focused ? 1.08 - centerDistance * 0.02 : 1 + influence * 0.025;
+      const dx = left + width / 2 - x;
+      const dy = top + height / 2 - y;
+      const length = Math.max(1, Math.hypot(dx, dy));
+      const shiftX = focused ? (localX - 0.5) * 5 : dx / length * influence * 12;
+      const shiftY = focused ? (localY - 0.5) * 5 : dy / length * influence * 12;
 
-      if (!emitWave || distance > 460) return;
-      let surface = card.querySelector('.project-water-surface');
-      if (!surface) {
-        surface = document.createElement('span');
-        surface.className = 'project-water-surface';
-        surface.setAttribute('aria-hidden', 'true');
-        card.appendChild(surface);
-      }
-      const ripple = document.createElement('span');
-      ripple.className = 'project-water-ripple';
-      ripple.style.left = `${localX}px`;
-      ripple.style.top = `${localY}px`;
-      surface.appendChild(ripple);
-      ripples.add(ripple);
-      ripple.addEventListener('animationend', () => {
-        ripple.remove();
-        ripples.delete(ripple);
-      }, { once: true });
-
-      if (card !== activeCard && distance < 280 && typeof card.animate === 'function') {
-        bobs.get(card)?.cancel();
-        const animation = card.animate([
-          { translate: '0 0' },
-          { translate: `0 ${-3 * (1 - distance / 350)}px`, offset: 0.4 },
-          { translate: '0 0' }
-        ], { duration: 1050, delay: distance * 1.4, easing: 'ease-in-out' });
-        bobs.set(card, animation);
-        animation.onfinish = () => {
-          if (bobs.get(card) === animation) bobs.delete(card);
-        };
-      }
+      card.style.setProperty('--project-origin-x', `${localX * 100}%`);
+      card.style.setProperty('--project-origin-y', `${localY * 100}%`);
+      card.style.setProperty('--project-zoom', String(zoom));
+      card.style.setProperty('--project-shift-x', `${shiftX}px`);
+      card.style.setProperty('--project-shift-y', `${shiftY}px`);
+      card.classList.toggle('is-magnified', proximity > 0);
+      card.classList.toggle('is-pointer-focused', focused);
     });
-    if (emitWave) lastWave = { x, y, time: now };
   };
 
   grid.addEventListener('pointermove', event => {
     if (!motion.matches || event.pointerType === 'touch' || projectOverlayOpen) return;
     pointer = { x: event.clientX, y: event.clientY, card: event.target.closest('.project-card') };
-    if (!frame) frame = requestAnimationFrame(updateWater);
+    if (!frame) frame = requestAnimationFrame(updateMagnification);
   }, { passive: true });
-  grid.addEventListener('pointerleave', resetProjectWater);
-  grid.addEventListener('pointercancel', resetProjectWater);
-  window.addEventListener('blur', resetProjectWater);
-  window.addEventListener('scroll', resetProjectWater, { passive: true });
-  motion.addEventListener('change', resetProjectWater);
+  grid.addEventListener('pointerleave', resetProjectMagnification);
+  grid.addEventListener('pointercancel', resetProjectMagnification);
+  window.addEventListener('blur', resetProjectMagnification);
+  window.addEventListener('scroll', resetProjectMagnification, { passive: true });
+  window.addEventListener('resize', resetProjectMagnification);
+  motion.addEventListener('change', resetProjectMagnification);
 }
 
 // Measure the rendered cards, not the platform label: older projects can have
@@ -123,7 +92,7 @@ function initProjectCardLayout(grid) {
     const styles = getComputedStyle(grid);
     const rowHeight = parseFloat(styles.gridAutoRows);
     const gap = parseFloat(styles.getPropertyValue('--project-card-gap')) || 24;
-    const rows = Math.ceil((card.getBoundingClientRect().height + gap) / rowHeight);
+    const rows = Math.ceil((card.offsetHeight + gap) / rowHeight);
     card.style.gridRowEnd = `span ${Math.max(1, rows)}`;
   };
 
@@ -172,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProjects();
   initProjectOverlay();
   initProjectSearch();
-  initProjectWaterInteraction();
+  initProjectMagnification();
   document.getElementById('currentYear').textContent = new Date().getFullYear();
 });
 
@@ -337,7 +306,7 @@ function renderProjects(data) {
   const grid = document.getElementById('projectsGrid');
   const emptyState = document.getElementById('projectsEmpty');
   if (!grid) return;
-  resetProjectWater();
+  resetProjectMagnification();
   
   if (data.length === 0) {
     projectCardObserver?.disconnect();
@@ -478,7 +447,7 @@ function openProjectDetails(id, options = {}) {
   const { updateUrl = false } = options;
   const project = projectsData.find(p => p.id == id);
   if (!project) return;
-  resetProjectWater();
+  resetProjectMagnification();
   
   const overlay = document.getElementById('projectOverlay');
   const hero = document.getElementById('overlayHero');

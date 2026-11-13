@@ -25,54 +25,83 @@ function loadContactInfo() {
 }
 
 function loadAchievements() {
-  const achievementsStr = localStorage.getItem('poetfolio_achievements');
   const grid = document.getElementById('achievementsGrid');
   const emptyState = document.getElementById('achievementsEmpty');
-  
+  const status = document.getElementById('achievementsStatus');
   if (!grid) return;
 
-  if (achievementsStr) {
-    try {
-      const achievements = JSON.parse(achievementsStr);
-      
-      if (achievements.length === 0) {
-        if (emptyState) emptyState.style.display = 'block';
-        return;
-      }
-      
-      let html = '';
-      
-      achievements.forEach((ach, index) => {
-        const delayClass = `reveal-delay-${(index % 3) + 1}`;
-        const targetAttr = ach.link ? 'target="_blank" rel="noopener noreferrer"' : '';
-        const href = ach.link ? ach.link : '#';
-        const tag = ach.link ? 'a' : 'div';
-        
-        html += `
-          <${tag} href="${href}" ${targetAttr} class="achievement-card reveal ${delayClass}">
-            <div class="achievement-img">
-              <img src="${ach.image}" alt="${ach.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E'">
-            </div>
-            <div class="achievement-info">
-              <h3 class="achievement-title">${ach.title}</h3>
-              <p class="achievement-details">${ach.details}</p>
-              ${ach.link ? `<div class="achievement-link-icon">View Certificate ↗</div>` : ''}
-            </div>
-          </${tag}>
-        `;
-      });
-      
-      grid.innerHTML = html;
-      
-      // Re-initialize scroll reveal for new items
-      if (typeof initScrollReveal === 'function') {
-        setTimeout(initScrollReveal, 100);
-      }
-      
-    } catch (e) {
-      console.error("Error parsing achievements data", e);
+  const showError = (error) => {
+    console.error('Unable to load achievements:', error);
+    grid.setAttribute('aria-busy', 'false');
+    if (status) {
+      status.hidden = false;
+      status.textContent = 'Certificates could not be loaded. Please refresh to try again.';
     }
-  } else {
-    if (emptyState) emptyState.style.display = 'block';
+  };
+
+  grid.setAttribute('aria-busy', 'true');
+  if (status) {
+    status.hidden = false;
+    status.textContent = 'Loading achievements and certificates…';
   }
+  if (!db) {
+    showError(new Error('Firebase is unavailable'));
+    return;
+  }
+
+  // Match the admin's shared document and keep open pages up to date after saves.
+  return db.collection('portfolio').doc('achievements').onSnapshot(doc => {
+    const items = doc.exists && Array.isArray(doc.data().items) ? doc.data().items : [];
+    grid.replaceChildren();
+    if (emptyState) {
+      emptyState.style.display = items.length ? 'none' : 'block';
+      grid.appendChild(emptyState);
+    }
+
+    items.forEach((achievement, index) => {
+      let link = null;
+      try {
+        const url = new URL(achievement.link);
+        if (url.protocol === 'https:' || url.protocol === 'http:') link = url.href;
+      } catch (_) { /* Certificates can be displayed without an external link. */ }
+
+      const card = document.createElement(link ? 'a' : 'article');
+      card.className = `achievement-card reveal reveal-delay-${(index % 3) + 1}`;
+      if (link) {
+        card.href = link;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+      }
+      const media = document.createElement('div');
+      media.className = 'achievement-img';
+      if (achievement.image) {
+        const image = document.createElement('img');
+        image.src = achievement.image;
+        image.alt = achievement.title || 'Certificate';
+        image.loading = 'lazy';
+        media.appendChild(image);
+      }
+      const info = document.createElement('div');
+      info.className = 'achievement-info';
+      const title = document.createElement('h3');
+      title.className = 'achievement-title';
+      title.textContent = achievement.title || 'Achievement';
+      const details = document.createElement('p');
+      details.className = 'achievement-details';
+      details.textContent = achievement.details || '';
+      info.append(title, details);
+      if (link) {
+        const action = document.createElement('span');
+        action.className = 'achievement-link-icon';
+        action.textContent = 'View Certificate ↗';
+        info.appendChild(action);
+      }
+      card.append(media, info);
+      grid.appendChild(card);
+    });
+
+    grid.setAttribute('aria-busy', 'false');
+    if (status) status.hidden = true;
+    if (typeof initScrollReveal === 'function') initScrollReveal();
+  }, showError);
 }
