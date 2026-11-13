@@ -181,7 +181,7 @@ function renderFeaturedProjects(projects) {
       : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22600%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%231e1e21%22/%3E%3C/svg%3E';
     const subtitle = escapeHtml(stripHtml(project.subtitle));
     const title = escapeHtml(project.title);
-    const url = `work.html?id=${encodeURIComponent(project.id)}`;
+    const url = getProjectPagePath(project.id);
     const delay = `reveal-delay-${(index % 3) + 1}`;
     const rank = String(index + 1).padStart(2, '0');
 

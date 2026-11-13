@@ -158,72 +158,125 @@ function initProjectMagnification() {
   const motion = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
   let frame = 0;
   let pointer = null;
+  let states = new Map();
+  let targetsDirty = false;
+  let lastTime = 0;
+  let pressed = false;
+  const properties = ['--project-zoom', '--project-shift-x', '--project-shift-y', '--project-origin-x', '--project-origin-y', '--project-tilt'];
 
   resetProjectMagnification = () => {
     cancelAnimationFrame(frame);
     frame = 0;
     pointer = null;
+    lastTime = 0;
+    pressed = false;
+    states.clear();
     grid.querySelectorAll('.project-card').forEach(card => {
-      ['--project-zoom', '--project-shift-x', '--project-shift-y', '--project-origin-x', '--project-origin-y'].forEach(property => card.style.removeProperty(property));
+      properties.forEach(property => card.style.removeProperty(property));
       card.classList.remove('is-magnified', 'is-pointer-focused');
     });
   };
 
-  const updateMagnification = () => {
-    frame = 0;
-    if (!pointer || !motion.matches || projectOverlayOpen) return;
+  const updateTargets = () => {
+    targetsDirty = false;
+    if (!pointer) {
+      states.forEach(state => { state.target = { zoom: 1, x: 0, y: 0, ox: 50, oy: 50, tilt: 0 }; state.focused = false; });
+      return;
+    }
     const { x, y } = pointer;
     const gridRect = grid.getBoundingClientRect();
-    const cards = [...grid.querySelectorAll('.project-card')];
-    // Keep focus anchored to the resting grid as neighbors move. Hit-testing
-    // only the animated elements can otherwise swap focus at their edges.
-    const activeCard = cards.find(card => {
-      const left = gridRect.left + card.offsetLeft;
-      const top = gridRect.top + card.offsetTop;
-      return x >= left && x <= left + card.offsetWidth &&
-        y >= top && y <= top + card.offsetHeight;
-    }) || pointer.card;
+    // Batch resting-layout reads before animation writes, avoiding feedback
+    // from moving bounds and repeated layout work on every spring frame.
+    const cards = [...grid.querySelectorAll('.project-card')].map(card => ({ card,
+      left: gridRect.left + card.offsetLeft, top: gridRect.top + card.offsetTop,
+      width: card.offsetWidth, height: card.offsetHeight
+    }));
+    const activeCard = cards.find(box => x >= box.left && x <= box.left + box.width && y >= box.top && y <= box.top + box.height)?.card || pointer.card;
 
-    cards.forEach(card => {
-      // Read the resting layout, not the zoomed bounds, to avoid feedback and
-      // jitter while the card grows under the pointer.
-      const left = gridRect.left + card.offsetLeft;
-      const top = gridRect.top + card.offsetTop;
-      const width = card.offsetWidth;
-      const height = card.offsetHeight;
+    cards.forEach(({ card, left, top, width, height }) => {
+      if (!width || !height) return;
       const localX = Math.max(0, Math.min(1, (x - left) / width));
       const localY = Math.max(0, Math.min(1, (y - top) / height));
       const distance = Math.hypot(
         Math.max(left - x, 0, x - left - width),
         Math.max(top - y, 0, y - top - height)
       );
-      const proximity = Math.max(0, 1 - distance / 340);
+      const proximity = Math.max(0, 1 - distance / 320);
       const influence = proximity * proximity * (3 - 2 * proximity);
       const focused = card === activeCard;
       const centerDistance = Math.min(1, Math.hypot(localX - 0.5, localY - 0.5) * 2);
-      const zoom = focused ? 1.14 - centerDistance * 0.04 : 1 + influence * 0.025;
+      const zoom = focused ? 1.18 - centerDistance * 0.025 - (pressed ? 0.035 : 0) : 1 + influence * 0.018;
       const dx = left + width / 2 - x;
       const dy = top + height / 2 - y;
       const length = Math.max(1, Math.hypot(dx, dy));
-      const shiftX = focused ? (localX - 0.5) * 7 : dx / length * influence * 36;
-      const shiftY = focused ? (localY - 0.5) * 7 : dy / length * influence * 36;
-
-      card.style.setProperty('--project-origin-x', `${localX * 100}%`);
-      card.style.setProperty('--project-origin-y', `${localY * 100}%`);
-      card.style.setProperty('--project-zoom', String(zoom));
-      card.style.setProperty('--project-shift-x', `${shiftX}px`);
-      card.style.setProperty('--project-shift-y', `${shiftY}px`);
-      card.classList.toggle('is-magnified', proximity > 0);
-      card.classList.toggle('is-pointer-focused', focused);
+      if (!states.has(card)) states.set(card, {
+        value: { zoom: 1, x: 0, y: 0, ox: 50, oy: 50, tilt: 0 },
+        velocity: { zoom: 0, x: 0, y: 0, ox: 0, oy: 0, tilt: 0 }
+      });
+      const state = states.get(card);
+      state.focused = focused;
+      state.target = { zoom,
+        x: focused ? (localX - 0.5) * 8 : dx / length * influence * 34,
+        y: focused ? (localY - 0.5) * 6 - 3 : dy / length * influence * 34,
+        ox: focused ? localX * 100 : 50, oy: focused ? localY * 100 : 50,
+        tilt: focused ? (localX - 0.5) * 1.6 : 0
+      };
     });
+  };
+
+  const animate = time => {
+    frame = 0;
+    if (!motion.matches || projectOverlayOpen) { resetProjectMagnification(); return; }
+    const dt = Math.min((time - (lastTime || time - 16.67)) / 1000, 1 / 30);
+    lastTime = time;
+    if (targetsDirty) updateTargets();
+    let moving = false;
+    states.forEach((state, card) => {
+      let settling = false;
+      Object.keys(state.value).forEach(key => {
+        // Small fixed substeps keep the spring stable on slower displays.
+        const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
+        const step = dt / steps;
+        for (let i = 0; i < steps; i++) {
+          const acceleration = (state.target[key] - state.value[key]) * 240 - state.velocity[key] * 25;
+          state.velocity[key] += acceleration * step;
+          state.value[key] += state.velocity[key] * step;
+        }
+        const threshold = key === 'zoom' ? 0.00015 : 0.015;
+        if (Math.abs(state.target[key] - state.value[key]) > threshold || Math.abs(state.velocity[key]) > threshold * 8) settling = true;
+        else { state.value[key] = state.target[key]; state.velocity[key] = 0; }
+      });
+      const v = state.value;
+      card.style.setProperty('--project-zoom', v.zoom.toFixed(5));
+      card.style.setProperty('--project-shift-x', `${v.x.toFixed(3)}px`);
+      card.style.setProperty('--project-shift-y', `${v.y.toFixed(3)}px`);
+      card.style.setProperty('--project-origin-x', `${v.ox.toFixed(3)}%`);
+      card.style.setProperty('--project-origin-y', `${v.oy.toFixed(3)}%`);
+      card.style.setProperty('--project-tilt', `${v.tilt.toFixed(3)}deg`);
+      card.classList.toggle('is-pointer-focused', state.focused);
+      card.classList.toggle('is-magnified', settling || v.zoom > 1.001);
+      moving ||= settling;
+    });
+    if (moving) frame = requestAnimationFrame(animate);
+    else {
+      lastTime = 0;
+      if (!pointer) resetProjectMagnification();
+    }
+  };
+
+  const schedule = () => {
+    targetsDirty = true;
+    if (!frame) frame = requestAnimationFrame(animate);
   };
 
   grid.addEventListener('pointermove', event => {
     if (!motion.matches || event.pointerType === 'touch' || projectOverlayOpen) return;
     pointer = { x: event.clientX, y: event.clientY, card: event.target.closest('.project-card') };
-    if (!frame) frame = requestAnimationFrame(updateMagnification);
+    schedule();
   }, { passive: true });
-  grid.addEventListener('pointerleave', resetProjectMagnification);
+  grid.addEventListener('pointerleave', () => { pointer = null; pressed = false; schedule(); });
+  grid.addEventListener('pointerdown', () => { if (pointer) { pressed = true; schedule(); } });
+  window.addEventListener('pointerup', () => { if (pressed) { pressed = false; schedule(); } });
   grid.addEventListener('pointercancel', resetProjectMagnification);
   window.addEventListener('blur', resetProjectMagnification);
   window.addEventListener('scroll', resetProjectMagnification, { passive: true });
@@ -299,7 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadProjects() {
   if (!db) {
     setProjectsLoading(false);
-    renderProjects([]);
+    projectsData = window.PORTFOLIO_PROJECTS || [];
+    renderProjects(projectsData);
+    openProjectFromUrl();
     hidePreloader();
     return;
   }
@@ -325,7 +380,9 @@ async function loadProjects() {
     
   } catch (e) {
     console.error("Error loading projects from Firebase", e);
-    renderProjects([]);
+    projectsData = window.PORTFOLIO_PROJECTS || [];
+    renderProjects(projectsData);
+    openProjectFromUrl();
   } finally {
     setProjectsLoading(false);
     hidePreloader();
@@ -490,15 +547,15 @@ function renderProjects(data) {
       : 'data:image/svg+xml,%3Csvg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'100%25\\\' height=\\\'100%25\\\'%3E%3Crect width=\\\'100%25\\\' height=\\\'100%25\\\' fill=\\\'%231e1e21\\\'/%3E%3C/svg%3E';
       
     html += `
-      <article class="project-card reveal ${delayClass} ${topTierClass} ${platformClass}" data-id="${project.id}">
-        <img src="${coverImg}" alt="${project.title}" class="project-cover">
+      <a href="${getProjectPagePath(project.id)}" class="project-card reveal ${delayClass} ${topTierClass} ${platformClass}" data-id="${project.id}">
+        <img src="${coverImg}" alt="${project.title}" class="project-cover" draggable="false" decoding="async">
         ${badgeHtml}
         <div class="project-info">
           <h3 class="project-title">${project.title}</h3>
           <div class="project-subtitle">${subtitleHtml}</div>
         </div>
         ${isMobile ? `<div class="platform-badge">${orientation === 'portrait' ? '📱' : '📱↔'}</div>` : ''}
-      </article>
+      </a>
     `;
   });
   
@@ -537,6 +594,8 @@ function initProjectOverlay() {
   grid.addEventListener('click', (e) => {
     const card = e.target.closest('.project-card');
     if (!card) return;
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
     
     const projectId = card.getAttribute('data-id');
     openProjectDetails(projectId, { updateUrl: true });
@@ -613,7 +672,9 @@ function openProjectDetails(id, options = {}) {
   document.getElementById('overlayTitle').textContent = project.title;
   document.getElementById('overlaySubtitle').innerHTML = renderSafeHtml(project.subtitle);
   overlay.setAttribute('data-project-id', project.id);
-  document.title = `${project.title} | Portfolio`;
+  document.title = `${project.title} | Ahmad Ajmal’s Game Portfolio`;
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.href = new URL(getProjectPagePath(project.id), 'https://ahmadajmal.vercel.app').href;
 
   if (hero) {
     hero.innerHTML = coverImg
@@ -684,7 +745,9 @@ function closeProjectOverlay(options = {}) {
   overlay.classList.remove('active');
   overlay.removeAttribute('data-project-id');
   projectOverlayOpen = false;
-  document.title = 'Portfolio | Work';
+  document.title = 'Game Development Portfolio | Ahmad Ajmal';
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.href = 'https://ahmadajmal.vercel.app/work.html';
   
   // Restore body scroll
   document.body.style.position = '';

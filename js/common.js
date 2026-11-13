@@ -31,6 +31,12 @@ const DEFAULT_DATA = {
   bhai: []
 };
 
+function getProjectPagePath(id) {
+  return window.PORTFOLIO_PROJECT_PAGES?.includes(String(id))
+    ? `/projects/${encodeURIComponent(id)}.html`
+    : `/work.html?id=${encodeURIComponent(id)}`;
+}
+
 // Firestore subcollections do not preserve the order in which documents were
 // written. Keep project ordering explicit so the admin's chosen order is used
 // consistently on every page and after a reload.
