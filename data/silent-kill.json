@@ -1,0 +1,18 @@
+{
+  "id": "silent-kill",
+  "title": "Project Silent Kill",
+  "subtitle": "A third-person action shooter",
+  "detail": "Project Silent Kill is a third-person action shooter featuring snow simulation and physics-based combat.\n\n<strong>Features</strong>\n<ul><li>Third-person shooter gameplay</li><li>Snow simulation</li><li>Physics-based combat</li></ul>",
+  "images": [
+    "assets/projects/silent-kill/cover.jpg",
+    "assets/projects/silent-kill/snow-combat.jpg",
+    "assets/projects/silent-kill/character.jpg",
+    "assets/projects/silent-kill/snow-simulation.jpg",
+    "assets/projects/silent-kill/outfits.jpg"
+  ],
+  "category": "Default",
+  "platform": "pc",
+  "orientation": "",
+  "isTopTier": false,
+  "order": 25
+}
