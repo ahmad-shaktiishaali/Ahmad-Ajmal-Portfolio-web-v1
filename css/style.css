@@ -1370,6 +1370,52 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ========== PROJECT GRID (Work Page) ========== */
+.work-showreel {
+  padding-top: clamp(1.25rem, 4vw, 3rem);
+}
+
+.work-showreel-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--border-accent);
+  border-radius: 12px;
+  background: #000;
+  box-shadow: var(--shadow-md);
+}
+
+.work-showreel-player iframe {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.work-showreel-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding-top: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.work-showreel-caption a {
+  color: var(--accent);
+  text-underline-offset: 4px;
+}
+
+.work-showreel-caption a:hover,
+.work-showreel-caption a:focus-visible {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
 .projects-grid {
   position: relative;
   --project-card-gap: 24px;
