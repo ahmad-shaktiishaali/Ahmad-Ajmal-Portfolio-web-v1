@@ -1540,7 +1540,7 @@ h1, h2, h3, h4, h5 {
   gap: 0.75rem;
   padding: 1.5rem 2rem;
   z-index: 10;
-  background: linear-gradient(to bottom, var(--bg-primary) 0%, rgba(10,10,11,0.84) 72%, transparent);
+  background: linear-gradient(to bottom, var(--bg-primary) 0%, var(--nav-bg) 72%, transparent);
   backdrop-filter: blur(10px);
 }
 
