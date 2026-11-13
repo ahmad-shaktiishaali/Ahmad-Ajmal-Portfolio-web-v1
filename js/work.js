@@ -31,10 +31,19 @@ function initProjectMagnification() {
   const updateMagnification = () => {
     frame = 0;
     if (!pointer || !motion.matches || projectOverlayOpen) return;
-    const { x, y, card: activeCard } = pointer;
+    const { x, y } = pointer;
     const gridRect = grid.getBoundingClientRect();
+    const cards = [...grid.querySelectorAll('.project-card')];
+    // Keep focus anchored to the resting grid as neighbors move. Hit-testing
+    // only the animated elements can otherwise swap focus at their edges.
+    const activeCard = cards.find(card => {
+      const left = gridRect.left + card.offsetLeft;
+      const top = gridRect.top + card.offsetTop;
+      return x >= left && x <= left + card.offsetWidth &&
+        y >= top && y <= top + card.offsetHeight;
+    }) || pointer.card;
 
-    grid.querySelectorAll('.project-card').forEach(card => {
+    cards.forEach(card => {
       // Read the resting layout, not the zoomed bounds, to avoid feedback and
       // jitter while the card grows under the pointer.
       const left = gridRect.left + card.offsetLeft;
@@ -47,16 +56,16 @@ function initProjectMagnification() {
         Math.max(left - x, 0, x - left - width),
         Math.max(top - y, 0, y - top - height)
       );
-      const proximity = Math.max(0, 1 - distance / 260);
+      const proximity = Math.max(0, 1 - distance / 340);
       const influence = proximity * proximity * (3 - 2 * proximity);
       const focused = card === activeCard;
       const centerDistance = Math.min(1, Math.hypot(localX - 0.5, localY - 0.5) * 2);
-      const zoom = focused ? 1.08 - centerDistance * 0.02 : 1 + influence * 0.025;
+      const zoom = focused ? 1.14 - centerDistance * 0.04 : 1 + influence * 0.025;
       const dx = left + width / 2 - x;
       const dy = top + height / 2 - y;
       const length = Math.max(1, Math.hypot(dx, dy));
-      const shiftX = focused ? (localX - 0.5) * 5 : dx / length * influence * 12;
-      const shiftY = focused ? (localY - 0.5) * 5 : dy / length * influence * 12;
+      const shiftX = focused ? (localX - 0.5) * 7 : dx / length * influence * 36;
+      const shiftY = focused ? (localY - 0.5) * 7 : dy / length * influence * 36;
 
       card.style.setProperty('--project-origin-x', `${localX * 100}%`);
       card.style.setProperty('--project-origin-y', `${localY * 100}%`);
