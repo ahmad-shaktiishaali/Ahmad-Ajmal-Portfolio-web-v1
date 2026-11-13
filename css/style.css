@@ -1456,6 +1456,9 @@ h1, h2, h3, h4, h5 {
 
 .projects-grid {
   position: relative;
+  width: 92%;
+  max-width: 960px;
+  margin-inline: auto;
   --project-card-gap: 24px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1580,7 +1583,7 @@ h1, h2, h3, h4, h5 {
 
 .project-info {
   position: relative;
-  padding: clamp(1rem, 2vw, 1.5rem);
+  padding: clamp(0.875rem, 1.5vw, 1.125rem);
   z-index: 2;
   transform: none;
   opacity: 1;
@@ -2555,7 +2558,7 @@ h1, h2, h3, h4, h5 {
   .service-item p { overflow-wrap: anywhere; }
 
   .main-content { padding: 0 1.25rem; }
-  .projects-grid { --project-card-gap: 16px; grid-template-columns: minmax(0, 1fr); }
+  .projects-grid { --project-card-gap: 16px; max-width: 360px; grid-template-columns: minmax(0, 1fr); }
   .projects-loader { padding: 1.4rem; min-height: 300px; }
   .projects-loader-skeletons { grid-template-columns: 1fr; gap: 1rem; }
   .project-skeleton:nth-child(2),
