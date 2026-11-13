@@ -7,6 +7,44 @@ const PROJECT_LOADER_MIN_MS = 650;
 let projectsLoadingStartedAt = 0;
 let projectsLoadingTimer = null;
 let projectOverlayOpen = false;
+let projectCardObserver = null;
+
+// Measure the rendered cards, not the platform label: older projects can have
+// portrait screenshots even when their saved platform is "desktop".
+function initProjectCardLayout(grid) {
+  if (projectCardObserver) projectCardObserver.disconnect();
+  if (typeof ResizeObserver === 'undefined') return;
+  grid.classList.add('projects-grid-adaptive');
+
+  const sizeCard = (card) => {
+    const styles = getComputedStyle(grid);
+    const rowHeight = parseFloat(styles.gridAutoRows);
+    const gap = parseFloat(styles.getPropertyValue('--project-card-gap')) || 24;
+    const rows = Math.ceil((card.getBoundingClientRect().height + gap) / rowHeight);
+    card.style.gridRowEnd = `span ${Math.max(1, rows)}`;
+  };
+
+  projectCardObserver = new ResizeObserver(entries => {
+    entries.forEach(entry => sizeCard(entry.target));
+  });
+
+  grid.querySelectorAll('.project-card').forEach(card => {
+    const image = card.querySelector('.project-cover');
+    const onImageLoad = () => {
+      if (image.naturalWidth && image.naturalHeight) {
+        image.style.aspectRatio = `${image.naturalWidth} / ${image.naturalHeight}`;
+        image.width = image.naturalWidth;
+        image.height = image.naturalHeight;
+      }
+      sizeCard(card);
+    };
+    image.addEventListener('load', onImageLoad, { once: true });
+    image.addEventListener('error', () => sizeCard(card), { once: true });
+    if (image.complete) onImageLoad();
+    sizeCard(card);
+    projectCardObserver?.observe(card);
+  });
+}
 
 function projectsCollection() {
   return db.collection('portfolio').doc('projects').collection('items');
@@ -197,6 +235,8 @@ function renderProjects(data) {
   if (!grid) return;
   
   if (data.length === 0) {
+    projectCardObserver?.disconnect();
+    grid.classList.remove('projects-grid-adaptive');
     grid.innerHTML = `
       <div class="empty-state reveal reveal-delay-2">
         <div class="empty-icon">ðŸ“</div>
@@ -238,6 +278,7 @@ function renderProjects(data) {
   });
   
   grid.innerHTML = html;
+  initProjectCardLayout(grid);
   
   if (typeof initScrollReveal === 'function') {
     setTimeout(initScrollReveal, 100);
@@ -351,7 +392,7 @@ function openProjectDetails(id, options = {}) {
     hero.innerHTML = coverImg
       ? `<img src="${coverImg}" alt="${project.title}" class="overlay-hero-img ${isMobile ? `overlay-hero-${orientation}` : ''}">`
       : '';
-    hero.style.display = coverImg ? 'block' : 'none';
+    hero.style.display = coverImg ? 'flex' : 'none';
   }
 
   if (badges) {
