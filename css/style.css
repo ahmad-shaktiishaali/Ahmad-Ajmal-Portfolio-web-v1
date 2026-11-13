@@ -1394,6 +1394,14 @@ h1, h2, h3, h4, h5 {
   border: 0;
 }
 
+.work-showreel-player:not(.is-ready) {
+  background: #000 url('https://i.ytimg.com/vi/hleG3jG3kBw/hqdefault.jpg') center / cover no-repeat;
+}
+
+.work-showreel-player:not(.is-ready) iframe {
+  opacity: 0;
+}
+
 .work-showreel-caption {
   display: flex;
   justify-content: space-between;
@@ -1414,6 +1422,36 @@ h1, h2, h3, h4, h5 {
 .work-showreel-caption a:focus-visible {
   color: var(--accent-hover);
   text-decoration: underline;
+}
+
+.work-showreel-sound {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--border-accent);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.work-showreel-sound:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.work-showreel-sound:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.work-showreel-status {
+  margin-top: 0.65rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.work-showreel-status:empty {
+  display: none;
 }
 
 .projects-grid {

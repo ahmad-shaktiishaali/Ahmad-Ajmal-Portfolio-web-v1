@@ -14,42 +14,72 @@ let pauseShowreel = () => {};
 function initShowreel() {
   const iframe = document.getElementById('workShowreel');
   const frame = document.querySelector('.work-showreel-player');
-  if (!iframe || !frame) return;
-
-  const url = new URL(iframe.src);
-  url.searchParams.set('origin', window.location.origin);
-  iframe.src = url.toString();
+  const soundButton = document.getElementById('showreelSound');
+  const status = document.getElementById('showreelStatus');
+  if (!iframe || !frame || !soundButton || !status) return;
 
   let player = null;
   let ready = false;
   let scrollFrame = 0;
+  let initialPlayPending = true;
+  let muted = true;
+  let playing = false;
+  let playbackTimer;
+
+  const updateSoundButton = () => {
+    soundButton.textContent = playing ? (muted ? 'Turn sound on' : 'Mute sound') : 'Play with sound';
+    soundButton.setAttribute('aria-label', soundButton.textContent);
+  };
+
+  const loadTimer = window.setTimeout(() => {
+    if (!ready) status.textContent = 'YouTube is taking longer to load or is blocked. You can watch using the YouTube link above.';
+  }, 12000);
 
   const isVisible = () => {
     const rect = frame.getBoundingClientRect();
     const navHeight = document.querySelector('.nav-bar')?.offsetHeight || 64;
     const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, navHeight));
     const availableHeight = Math.min(rect.height, Math.max(0, window.innerHeight - navHeight));
+    const controls = soundButton.getBoundingClientRect();
+    const controlsVisible = controls.top < window.innerHeight && controls.bottom > navHeight;
     return !document.hidden && !projectOverlayOpen && availableHeight > 0 &&
-      visibleHeight >= availableHeight * 0.5;
+      (visibleHeight >= availableHeight * 0.5 || (visibleHeight > 0 && controlsVisible));
   };
 
   pauseShowreel = () => {
     if (ready) player.pauseVideo();
   };
 
-  const pauseIfHidden = () => {
+  const syncVisibility = () => {
     scrollFrame = 0;
     if (!isVisible()) pauseShowreel();
+    // A hidden tab must still get its first autoplay attempt when opened.
+    // After playback has started, never override a visitor's manual pause.
+    else if (ready && initialPlayPending) player.playVideo();
   };
 
   // Only autoplay on the initial load. Scrolling back up must not override a
   // visitor's decision to pause the video or turn its sound on.
   window.addEventListener('scroll', () => {
-    if (!scrollFrame) scrollFrame = requestAnimationFrame(pauseIfHidden);
+    if (!scrollFrame) scrollFrame = requestAnimationFrame(syncVisibility);
   }, { passive: true });
-  window.addEventListener('resize', pauseIfHidden);
-  document.addEventListener('visibilitychange', pauseIfHidden);
+  window.addEventListener('resize', syncVisibility);
+  document.addEventListener('visibilitychange', syncVisibility);
   window.addEventListener('pagehide', pauseShowreel);
+
+  soundButton.addEventListener('click', () => {
+    if (!ready) return;
+    initialPlayPending = false;
+    // Sound is enabled only by this explicit gesture, as browsers require.
+    muted = playing && !player.isMuted();
+    if (muted) player.mute();
+    else {
+      player.setVolume(80);
+      player.unMute();
+    }
+    player.playVideo();
+    updateSoundButton();
+  });
 
   const createPlayer = () => {
     if (player) return;
@@ -57,17 +87,51 @@ function initShowreel() {
       events: {
         onReady: event => {
           ready = true;
+          clearTimeout(loadTimer);
+          frame.classList.add('is-ready');
+          soundButton.disabled = false;
           event.target.mute();
-          // The visitor may have scrolled to the projects before YouTube loaded.
-          if (isVisible()) event.target.playVideo();
-          else event.target.pauseVideo();
+          status.textContent = '';
+          updateSoundButton();
+          syncVisibility();
+          playbackTimer = window.setTimeout(() => {
+            if (initialPlayPending && isVisible()) status.textContent = 'Press Play with sound to start the showreel.';
+          }, 8000);
         },
         onStateChange: event => {
-          if (event.data === window.YT.PlayerState.PLAYING) pauseIfHidden();
+          playing = event.data === window.YT.PlayerState.PLAYING;
+          if (playing) {
+            initialPlayPending = false;
+            clearTimeout(playbackTimer);
+            muted = player.isMuted();
+            status.textContent = '';
+            if (!isVisible()) pauseShowreel();
+          }
+          updateSoundButton();
+        },
+        onAutoplayBlocked: () => {
+          initialPlayPending = false;
+          playing = false;
+          status.textContent = 'Autoplay was blocked by your browser. Press Play with sound to start.';
+          updateSoundButton();
+        },
+        onError: () => {
+          clearTimeout(loadTimer);
+          clearTimeout(playbackTimer);
+          soundButton.disabled = true;
+          soundButton.textContent = 'Video unavailable';
+          frame.classList.remove('is-ready');
+          status.textContent = 'The embedded video could not load. Watch it using the YouTube link above.';
         }
       }
     });
   };
+
+  // Set the origin before the very first request, instead of reloading a live
+  // iframe and interrupting YouTube's autoplay/API handshake.
+  const url = new URL(iframe.dataset.src);
+  url.searchParams.set('origin', window.location.origin);
+  iframe.src = url.toString();
 
   if (window.YT?.Player) {
     createPlayer();

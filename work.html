@@ -55,7 +55,7 @@
         <div class="work-showreel-player">
           <iframe
             id="workShowreel"
-            src="https://www.youtube-nocookie.com/embed/hleG3jG3kBw?rel=0&amp;playsinline=1&amp;autoplay=1&amp;mute=1&amp;enablejsapi=1"
+            data-src="https://www.youtube-nocookie.com/embed/hleG3jG3kBw?rel=0&amp;playsinline=1&amp;autoplay=1&amp;mute=1&amp;enablejsapi=1"
             title="Ahmad Ajmal's game development showreel"
             width="1280"
             height="720"
@@ -66,8 +66,11 @@
         </div>
         <div class="work-showreel-caption">
           <span>Game Development Showreel</span>
+          <button id="showreelSound" class="work-showreel-sound" type="button" disabled>Loading video…</button>
           <a href="https://www.youtube.com/watch?v=hleG3jG3kBw" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a>
         </div>
+        <p id="showreelStatus" class="work-showreel-status" role="status">Loading showreel…</p>
+        <noscript><p>Enable JavaScript to play the showreel here, or use the YouTube link above.</p></noscript>
       </section>
 
       <section class="section" style="padding-top: 4rem;">
