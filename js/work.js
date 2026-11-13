@@ -9,6 +9,83 @@ let projectsLoadingTimer = null;
 let projectOverlayOpen = false;
 let projectCardObserver = null;
 let resetProjectMagnification = () => {};
+let pauseShowreel = () => {};
+
+function initShowreel() {
+  const iframe = document.getElementById('workShowreel');
+  const frame = document.querySelector('.work-showreel-player');
+  if (!iframe || !frame) return;
+
+  const url = new URL(iframe.src);
+  url.searchParams.set('origin', window.location.origin);
+  iframe.src = url.toString();
+
+  let player = null;
+  let ready = false;
+  let scrollFrame = 0;
+
+  const isVisible = () => {
+    const rect = frame.getBoundingClientRect();
+    const navHeight = document.querySelector('.nav-bar')?.offsetHeight || 64;
+    const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, navHeight));
+    const availableHeight = Math.min(rect.height, Math.max(0, window.innerHeight - navHeight));
+    return !document.hidden && !projectOverlayOpen && availableHeight > 0 &&
+      visibleHeight >= availableHeight * 0.5;
+  };
+
+  pauseShowreel = () => {
+    if (ready) player.pauseVideo();
+  };
+
+  const pauseIfHidden = () => {
+    scrollFrame = 0;
+    if (!isVisible()) pauseShowreel();
+  };
+
+  // Only autoplay on the initial load. Scrolling back up must not override a
+  // visitor's decision to pause the video or turn its sound on.
+  window.addEventListener('scroll', () => {
+    if (!scrollFrame) scrollFrame = requestAnimationFrame(pauseIfHidden);
+  }, { passive: true });
+  window.addEventListener('resize', pauseIfHidden);
+  document.addEventListener('visibilitychange', pauseIfHidden);
+  window.addEventListener('pagehide', pauseShowreel);
+
+  const createPlayer = () => {
+    if (player) return;
+    player = new window.YT.Player('workShowreel', {
+      events: {
+        onReady: event => {
+          ready = true;
+          event.target.mute();
+          // The visitor may have scrolled to the projects before YouTube loaded.
+          if (isVisible()) event.target.playVideo();
+          else event.target.pauseVideo();
+        },
+        onStateChange: event => {
+          if (event.data === window.YT.PlayerState.PLAYING) pauseIfHidden();
+        }
+      }
+    });
+  };
+
+  if (window.YT?.Player) {
+    createPlayer();
+  } else {
+    const previousReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof previousReady === 'function') previousReady();
+      createPlayer();
+    };
+    if (!document.getElementById('youtubeIframeApi')) {
+      const script = document.createElement('script');
+      script.id = 'youtubeIframeApi';
+      script.src = 'https://www.youtube.com/iframe_api';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }
+}
 
 function initProjectMagnification() {
   const grid = document.getElementById('projectsGrid');
@@ -146,6 +223,7 @@ async function loadProjectsFromFirebase() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initShowreel();
   setProjectsLoading(true);
   loadProjects();
   initProjectOverlay();
@@ -456,6 +534,7 @@ function openProjectDetails(id, options = {}) {
   const { updateUrl = false } = options;
   const project = projectsData.find(p => p.id == id);
   if (!project) return;
+  pauseShowreel();
   resetProjectMagnification();
   
   const overlay = document.getElementById('projectOverlay');
