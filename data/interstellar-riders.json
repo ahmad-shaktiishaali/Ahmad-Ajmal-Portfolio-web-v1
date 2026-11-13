@@ -1,0 +1,17 @@
+{
+  "id": "interstellar-riders",
+  "title": "Interstellar Riders",
+  "subtitle": "A 2D space shooter game",
+  "detail": "Interstellar Riders is an action-packed 2D space shooter with infinite levels, different enemy planes, and boss battles.\n\n<strong>Features</strong>\n<ul><li>Infinite levels</li><li>Different enemy planes</li><li>Boss battles</li><li>Login system and leaderboard</li><li>Action-packed combat</li></ul>",
+  "images": [
+    "assets/projects/interstellar-riders/cover.jpg",
+    "assets/projects/interstellar-riders/gameplay-1.jpg",
+    "assets/projects/interstellar-riders/gameplay-2.jpg",
+    "assets/projects/interstellar-riders/gameplay-3.jpg"
+  ],
+  "category": "Default",
+  "platform": "mobile",
+  "orientation": "portrait",
+  "isTopTier": false,
+  "order": 23
+}
