@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ahmad Bin Ajmal | CV</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <script src="js/theme-init.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .cv-page { height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
+    .cv-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; padding: 1rem clamp(1rem, 3vw, 2rem); border-bottom: 1px solid var(--border-accent); background: var(--bg-secondary); }
+    .cv-toolbar h1 { flex: 1; min-width: 150px; margin: 0; font-size: clamp(1rem, 2vw, 1.25rem); }
+    .cv-back { color: var(--text-secondary); font-size: 0.85rem; text-decoration: none; }
+    .cv-back:hover { color: var(--accent); }
+    .cv-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+    .cv-actions .btn-primary { padding: 0.7rem 1rem; font-size: 0.8rem; }
+    .cv-direct { color: var(--accent); font-size: 0.8rem; text-underline-offset: 3px; }
+    .cv-preview { min-height: 0; overflow: auto; padding: 1rem; background: #292929; }
+    .cv-status { color: #eee; text-align: center; padding: 1rem; }
+    .cv-status:empty { display: none; }
+    .cv-sheet { position: relative; width: fit-content; max-width: 100%; margin: 0 auto 1rem; background: white; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); }
+    .cv-sheet canvas { display: block; max-width: 100%; height: auto; }
+    .cv-page-text { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: pre-wrap; }
+    @media (max-width: 540px) {
+      .cv-toolbar { gap: 0.65rem; padding: 0.75rem 1rem; }
+      .cv-actions { width: 100%; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body class="cv-page">
+  <header class="cv-toolbar">
+    <a class="cv-back" href="/">← Portfolio</a>
+    <h1>Ahmad Bin Ajmal · CV</h1>
+    <div class="cv-actions">
+      <a class="cv-direct" href="assets/Ahmad_Bin_Ajmal_CV_Final.pdf">Open PDF directly</a>
+      <a class="btn-primary" href="assets/Ahmad_Bin_Ajmal_CV_Final.pdf" download="Ahmad_Bin_Ajmal_CV.pdf">Download PDF <span aria-hidden="true">↓</span></a>
+    </div>
+  </header>
+  <main class="cv-preview" id="cvPreview" aria-label="CV PDF preview" aria-busy="true">
+    <p id="cvStatus" class="cv-status" role="status">Loading CV…</p>
+    <div id="cvPages"></div>
+    <noscript><p class="cv-status">Use “Open PDF directly” above to view your CV without JavaScript.</p></noscript>
+  </main>
+  <script type="module" src="js/cv.js"></script>
+</body>
+</html>

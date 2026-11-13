@@ -91,6 +91,7 @@ const pages = [
   ['index.html', '/', 'Ahmad Ajmal | Unity Game Developer & Software Engineer', 'Ahmad Ajmal (Ahmad Bin Ajmal) is a game developer and software engineer in Pakistan. Explore Unity, iOS and PC games, software, and interactive web projects.'],
   ['work.html', '/work.html', 'Game Development Portfolio | Ahmad Ajmal', 'Explore Ahmad Ajmal’s Unity, iOS and PC game projects, gameplay screenshots, App Store releases, and game development showreel.'],
   ['contact.html', '/contact.html', 'Contact Ahmad Ajmal | Game Developer & Software Engineer', 'Contact Ahmad Ajmal in Muzaffarabad, Pakistan for game development, software engineering and web projects. View achievements and certificates.'],
+  ['cv.html', '/cv.html', 'Ahmad Bin Ajmal CV | Game Developer & Software Engineer', 'View and download Ahmad Bin Ajmal’s PDF CV, covering game development, software engineering, skills and experience.'],
   ['play.html', '/play.html', 'Interactive Mini Games | Ahmad Ajmal', 'Play interactive browser mini games on Ahmad Ajmal’s game development portfolio.'],
   ['bhai.html', '/bhai.html', 'Bhai Log Community | Ahmad Ajmal', 'Meet the Bhai Log community on Ahmad Ajmal’s portfolio.']
 ];
