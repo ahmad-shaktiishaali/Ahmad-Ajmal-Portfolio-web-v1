@@ -1,0 +1,18 @@
+{
+  "id": "math-mayhem",
+  "title": "Math Mayhem",
+  "subtitle": "A math quiz combat game",
+  "detail": "Math Mayhem combines math quizzes with combat gameplay. Players solve different types of math problems as they progress through multiple levels.\n\n<strong>Features</strong>\n<ul><li>Math quiz-based combat</li><li>Different levels of math problems</li><li>Fraction questions and word problems</li></ul>",
+  "images": [
+    "assets/projects/math-mayhem/cover.jpg",
+    "assets/projects/math-mayhem/gameplay-1.jpg",
+    "assets/projects/math-mayhem/story.jpg",
+    "assets/projects/math-mayhem/gameplay-2.jpg",
+    "assets/projects/math-mayhem/gameplay-3.jpg"
+  ],
+  "category": "Default",
+  "platform": "pc",
+  "orientation": "",
+  "isTopTier": false,
+  "order": 24
+}
